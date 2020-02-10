@@ -1,11 +1,11 @@
-import { GlobalScope } from './global';
+import { Namespace } from './namespace';
 
 class AccorTrackingDecorator {
-    private scope: GlobalScope;
+    private namespace: Namespace;
 
     constructor() {
-        this.scope = new GlobalScope();
-        this.scope.set('instance', this);
+        this.namespace = new Namespace();
+        this.namespace.set('instance', this);
     }
 
 }

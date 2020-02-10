@@ -7,7 +7,7 @@ declare global {
 /**
  * Exposes properties and method to window
  */
-export class GlobalScope {
+export class Namespace {
     constructor() {
         if (typeof window._AccorTrackingDecorator === 'undefined') {
             window._AccorTrackingDecorator = {};
