@@ -1,0 +1,17 @@
+{
+  "name": "accor-tracking-decorator",
+  "version": "0.0.1",
+  "description": "Script to decorate links to Accor Booking funnel with tracking parameters",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matteo Canever <mcanever@d-edge.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "ts-loader": "^6.2.1",
+    "typescript": "^3.7.5",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
+  }
+}
