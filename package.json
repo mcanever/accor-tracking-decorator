@@ -4,6 +4,9 @@
   "description": "Script to decorate links to Accor Booking funnel with tracking parameters",
   "private": true,
   "scripts": {
+    "watch": "npx webpack --env.mode=watch",
+    "build": "npx webpack --env.mode=production",
+    "build-dev": "npx webpack --env.mode=development",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Matteo Canever <mcanever@d-edge.com>",
