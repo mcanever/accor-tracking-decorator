@@ -8,7 +8,9 @@ class AccorTrackingDecorator {
     public trackingParams: TrackingParams;
     private config: {
         merchantid: string,
-        debug: boolean
+        hotelID: string,
+        debug: boolean,
+        handleGoogleAnalytics: boolean,
     };
 
     constructor() {
@@ -26,20 +28,14 @@ class AccorTrackingDecorator {
 
         // Initialize parameters
         this.initParameters();
-        logger.log('AccorTrackingDecorator params', this.trackingParams);
-
-        // Detect Google Analytics _ga and gacid parameters
-        detectGAParameters((params) =>  {
-           this.trackingParams.gacid = params.gacid;
-           this.trackingParams._ga = params._ga;
-           logger.log(this.trackingParams);
-        });
     }
 
     private initConfig() {
         this.config = {
             merchantid: this.namespace.getConfig('merchantid') || '',
-            debug: !!this.namespace.getConfig('debug')
+            hotelID: this.namespace.getConfig('hotelID') || '',
+            debug: !!this.namespace.getConfig('debug'),
+            handleGoogleAnalytics: this.namespace.getConfig('handleGoogleAnalytics') !== false
         };
     }
 
@@ -47,6 +43,14 @@ class AccorTrackingDecorator {
         this.trackingParams = {
             merchantid: this.config.merchantid
         };
+        // Detect Google Analytics _ga and gacid parameters
+        detectGAParameters((params) =>  {
+            if (this.config.handleGoogleAnalytics) {
+                this.trackingParams.gacid = params.gacid;
+                this.trackingParams._ga = params._ga;
+            }
+            logger.log('AccorTrackingDecorator params', this.trackingParams);
+        });
     }
 
 }
