@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const webpack = require('webpack');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const license = fs.readFileSync(path.resolve(__dirname, 'LICENSE')).toString();
 
@@ -55,6 +56,12 @@ module.exports = function(env) {
             new webpack.BannerPlugin({
                 banner: license
             }),
+            new CopyWebpackPlugin([
+                {
+                    from: 'tests/*.html',
+                    to: ''
+                }
+            ]),
         ],
     }
 };

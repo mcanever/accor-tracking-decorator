@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<head>
+    <script src="../decorator.js" async></script>
+    <script>
+        var _AccorTrackingDecorator = _AccorTrackingDecorator || {};
+        _AccorTrackingDecorator.config = {
+            merchantid: 'MS-12345',
+            debug: true
+        };
+    </script>
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-70971972-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-70971972-1');
+    </script>
+
+</head>
+<body>
+</body>

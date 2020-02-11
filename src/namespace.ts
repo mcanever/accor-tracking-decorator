@@ -21,4 +21,9 @@ export class Namespace {
     public set(name: string, value: any): any {
         window._AccorTrackingDecorator[name] = value;
     }
+
+    public getConfig(name: string): any {
+        var config = this.get('config');
+        return (typeof config[name] !== 'undefined') ? config[name] : false;
+    }
 }

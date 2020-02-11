@@ -12,9 +12,13 @@
   "author": "Matteo Canever <mcanever@d-edge.com>",
   "license": "MIT",
   "devDependencies": {
+    "copy-webpack-plugin": "^5.1.1",
     "ts-loader": "^6.2.1",
     "typescript": "^3.7.5",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "js-cookie": "^2.2.1"
   }
 }
