@@ -10,6 +10,7 @@ declare global {
 }
 
 // Ported in typescript-ish from accor-booking/booking.js
+// Detects Google Analytics Client ID and Linker Param
 export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: string|false}) => void): void {
     window.AccorBooking_GUA_ClientId = false;
     window.AccorBooking_GUA_linkerParam = false;

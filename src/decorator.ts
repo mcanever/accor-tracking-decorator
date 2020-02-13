@@ -2,7 +2,11 @@ import { detectGAParameters } from "./ga";
 import { logger } from "./logger";
 import { Namespace } from './namespace';
 import { TrackingParams } from './types/trackingparams';
+import {Attribution} from "./attribution";
 
+/**
+ * Main class to use for decorating any link going to all.accor.com with vital parameters that ensure tracking
+ */
 class AccorTrackingDecorator {
     private namespace: Namespace;
     public trackingParams: TrackingParams;
@@ -51,6 +55,7 @@ class AccorTrackingDecorator {
             }
             logger.log('AccorTrackingDecorator params', this.trackingParams);
         });
+        Attribution.testStore();
     }
 
 }

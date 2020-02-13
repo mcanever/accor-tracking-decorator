@@ -1,3 +1,7 @@
+/**
+ * Wrapper for console.log. To be used as a "singleton", set enabled to true to enable logging to console.
+ */
+
 export default class Logger {
     public enabled = false;
 
