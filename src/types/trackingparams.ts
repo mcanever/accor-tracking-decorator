@@ -1,5 +1,5 @@
 export type TrackingParams = {
-    merchantid: string,
+    merchantid?: string,
     _ga?: string|false
     gacid?: string|false
     utm_source?: string|false
