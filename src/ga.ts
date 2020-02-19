@@ -18,12 +18,12 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
     //Wait for ga() to be available and get clientId
     let clientIdInterval = setInterval(function() {
         if (typeof window.ga !== 'undefined') {
-            clearInterval(clientIdInterval);
-            clientIdInterval = null;
             window.ga(function() {
                 let trackers = window.ga.getAll();
                 // Get the client ID and Linker param from the first tracker
                 if (typeof trackers[0] !== 'undefined') {
+                    clearInterval(clientIdInterval);
+                    clientIdInterval = null;
                     let clientId = trackers[0].get('clientId')
                     window.AccorBooking_GUA_ClientId = clientId;
                     cbackParams.gacid = clientId;

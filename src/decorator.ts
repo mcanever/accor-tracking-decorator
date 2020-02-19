@@ -2,8 +2,9 @@ import { detectGAParameters } from "./ga";
 import { logger } from "./logger";
 import { Namespace } from './namespace';
 import { TrackingParams } from './types/trackingparams';
-import {Attribution} from "./attribution";
-import {Store} from "./store";
+import { Attribution } from "./attribution";
+import { Store } from "./store";
+import { utils } from "./utils";
 
 /**
  * Main class to use for decorating any link going to all.accor.com with vital parameters that ensure tracking
@@ -25,6 +26,7 @@ class AccorTrackingDecorator {
         this.namespace = new Namespace();
         this.namespace.set('instance', this);
         this.namespace.set('Store', Store);
+        this.namespace.set('utils', utils);
 
         // Read configuration from global namespace
         this.initConfig();
@@ -89,8 +91,7 @@ class AccorTrackingDecorator {
         });
 
         const referrer = this.config.testReferrer !== '' ? this.config.testReferrer : document.referrer;
-        const attr = Attribution.getAttributionParams(referrer);
-        logger.log('bd', attr);
+        this.trackingParams.sourceid = Attribution.getSourceId(referrer);
     }
 
 }
