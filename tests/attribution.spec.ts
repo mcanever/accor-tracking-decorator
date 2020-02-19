@@ -1,12 +1,6 @@
 import { Attribution } from "../src/attribution";
 import { expect } from 'chai';
 
-declare global {
-    interface Window {
-        location: Location;
-    }
-}
-
 describe('Attribution', () => {
     let oldFn: () => string;
     before(() => {
