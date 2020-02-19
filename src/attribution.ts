@@ -110,7 +110,6 @@ export class Attribution {
         };
 
         for (let category in topReferrers) {
-            console.log('sdfsf');
             if (topReferrers.hasOwnProperty(category)) {
                 const section = topReferrers[category];
                 for (let name in section) {
