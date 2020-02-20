@@ -42,7 +42,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                     }
                 }
                 // Dispatch an event to notify that we have the tracking parameters available
-                document.body.dispatchEvent(new Event('accor.tracking_params_available'));
+                document.dispatchEvent(new Event('accor_tracking_params_available'));
                 cback(cbackParams);
             });
         }
@@ -53,7 +53,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
     setTimeout(function() {
         if (typeof clientIdInterval !== 'undefined' && clientIdInterval !== null) {
             clearInterval(clientIdInterval);
-            document.body.dispatchEvent(new Event('accor.tracking_params_available'));
+            document.dispatchEvent(new Event('accor_tracking_params_available'));
             cback(cbackParams);
         }
     }, 10000);

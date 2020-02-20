@@ -1,32 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8"/>
+
+    <!-- Decorator library -->
     <script src="../decorator.js" async></script>
+
+    <!-- Decorator configuration -->
     <script>
         var _AccorTrackingDecorator = _AccorTrackingDecorator || {};
         _AccorTrackingDecorator.config = {
             merchantid: 'MS-12345',
             hotelID: '12345',
+            autoDecorate: true,
             debug: true,
             handleGoogleAnalytics: true,
-            //testReferrer: 'https://www.google.co.uk/asd/s.html?Sdf#123'
+            testReferrer: 'https://www.google.co.uk/asd/s.html?Sdf#123'
         };
-
     </script>
 
-    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-70971972-1"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
+        function gtag() {dataLayer.push(arguments);}
         gtag('js', new Date());
-
         gtag('config', 'UA-70971972-1');
     </script>
-
+    <style>
+        html, body {font-family: Arial, Helvetica, sans-serif; color: #333;}
+        main {width: 90%; max-width: 1200px; margin: 50px auto;}
+    </style>
 </head>
-
-</html>
 <body>
+    <main>
+        <h1>AccorTrackingDecorator test</h1>
+        <p>
+            Autodecorated links
+            <ul>
+                <li><a target="_blank" href="https://all.accor.com/lien_externe.svlt?destination=3537&goto=rech_resa&merchantid=ThisWillBeOverWritten">all.accor.com, merchantid will be Overwritten</a></li>
+            </ul>
+        </p>
+    </main>
 </body>
+</html>

@@ -1,9 +1,9 @@
 import Cookies from 'js-cookie';
 
 export const utils = {
-    getUrlVars: () => {
+    getUrlVars: (url: string) => {
         let vars: any = {};
-        const parts = window.location.href.replace(
+        const parts = url.replace(
             /[?&]+([^=&]+)=([^&]*)/gi,
             (substring: string, key: string, value: string) => {
                 vars[key] = value;
@@ -41,5 +41,18 @@ export const utils = {
         str = str.slice(0,120);
 
         return str;
+    },
+    parseUrlParts: (href: string): any => {
+        var l = document.createElement("a");
+        l.href = href;
+        return l;
+    },
+    onDomReady: (callback: () => void) => {
+        if (document.readyState != "loading") {
+            callback();
+        }
+        else {
+            document.addEventListener("DOMContentLoaded", callback);
+        }
     }
 };

@@ -5,7 +5,7 @@ import { logger } from "./logger";
 export class Attribution {
     public static getSourceId(referrer: string): string {
         let sourceid = 'Direct_Access';
-        const vars = utils.getUrlVars();
+        const vars = utils.getUrlVars(Attribution.getCurrentURL());
         const url_sourceid = vars.sourceid || null;
         const cookie_sourceid = Store.get('sourceid');
         const has_utm_in_url = !!(vars.utm_source || vars.utm_campaign || vars.utm_medium);
@@ -13,6 +13,8 @@ export class Attribution {
         const cookie_sourceid_starts_with_sid = cookie_sourceid && /^SID/.test(cookie_sourceid);
         const cookie_sourceid_starts_with_utm = cookie_sourceid && /^UTM/.test(cookie_sourceid);
         const referrer_source = Attribution.detectReferrer(referrer);
+
+        let saveInCookie = true;
 
         // If there is a sourceid parameter, stock the value in the cookie and replace the existing one as follow:
         //SID_$sourceid where $sourceid is the value of the corresponding url parameter.
@@ -24,8 +26,8 @@ export class Attribution {
         // If the value stocked in the cookie starts with SID
         else if (cookie_sourceid_starts_with_sid) {
             sourceid = cookie_sourceid;
+            saveInCookie = false;
             logger.log('sourceid from sourceid cookie with SID', sourceid);
-
         } else {
             //If there is a utm parameter (and no value stocked in the cookie or its value does not start with SID because of the last two if statement),
             //stock a value that concatenates the parameters as follow: UTM_$utm_source_$utm_medium_$utm_campaign
@@ -52,6 +54,7 @@ export class Attribution {
             //If the cookie value starts with UTM keeps its value
             else if (cookie_sourceid_starts_with_utm) {
                 sourceid = cookie_sourceid;
+                saveInCookie = false;
                 logger.log('sourceid from sourceid cookie with UTM', sourceid);
             }
 
@@ -63,18 +66,23 @@ export class Attribution {
                 sourceid = referrer_source.category + '_' + referrer_source.name;
                 logger.log('sourceid from referrer', sourceid);
             } else if (!empty_cookie_sourceid) {
-                // Finally use the value from the cookie if not empty
+                // Last chance: use the value from the cookie if not empty
                 sourceid = cookie_sourceid;
+                saveInCookie = false;
+                logger.log('sourceid from cookie value', sourceid);
             }
         }
         sourceid = utils.normalizeString(sourceid);
+
         // Save in cookie
-        Store.set('sourceid', sourceid);
+        if (saveInCookie) {
+            Store.set('sourceid', sourceid);
+        }
         return sourceid;
     }
 
     public static detectReferrer(referrer: string): { category: string, name: string } {
-        // No need to run all those RegExes if referrer is empty
+        // No need to run all those RegExes if referrer is empty or same hostname as our page.
         if (referrer === '' || referrer.toLowerCase().indexOf(Attribution.getOrigin()) === 0) {
             return null;
         }
@@ -130,5 +138,9 @@ export class Attribution {
 
     public static getOrigin(): string {
         return location.origin.toLowerCase();
+    }
+
+    public static getCurrentURL() {
+        return location.href;
     }
 }

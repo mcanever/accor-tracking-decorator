@@ -10,5 +10,10 @@ export default class Logger {
             console.log.apply(this, args);
         }
     }
+
+    public alwaysLog(...args: any[]) {
+        console.log.apply(this, args);
+    }
 }
-export const logger = new Logger();
+export const logger =
+    new Logger();
