@@ -202,5 +202,9 @@ This script won't fully work on Internet Explorer 10 or lower. IE11 is supported
 
 ## Authors
 
-Matteo Canever
-Andrea Baccega
+- Matteo Canever
+- Andrea Baccega
+
+## How to build
+
+See [BUILD.md](BUILD.md)
