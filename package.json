@@ -8,7 +8,8 @@
     "watch": "npx webpack --env.mode=watch",
     "build": "npx webpack --env.mode=production",
     "build-dev": "npx webpack --env.mode=development",
-    "test": "mocha --bail --exit --require ts-node/register './tests/*.spec.ts'"
+    "test": "mocha --bail --exit --require ts-node/register './tests/*.spec.ts'",
+    "toc": "node buildToc.js"
   },
   "author": "Matteo Canever <mcanever@d-edge.com>",
   "license": "MIT",
@@ -21,6 +22,7 @@
     "chai": "^4.2.0",
     "copy-webpack-plugin": "^5.1.1",
     "mocha": "^7.0.1",
+    "markdown-toc": "^1.2.0",
     "sinon": "^9.0.0",
     "ts-loader": "^6.2.1",
     "ts-node": "^8.6.2",
