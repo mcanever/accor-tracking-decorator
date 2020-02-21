@@ -50,7 +50,8 @@ export class Decorator {
             }
         }
         if (searchChunks.length > 0) {
-            url = u.protocol + '//' + u.hostname + u.pathname + '?' + searchChunks.join('&') + (u.hash || '');
+            const path = /^\//.test(u.pathname) ? u.pathname : '/' + u.pathname;
+            url = u.protocol + '//' + u.hostname + path + '?' + searchChunks.join('&') + (u.hash || '');
         }
 
         return url;

@@ -1,4 +1,5 @@
 import { logger } from "./logger";
+import { utils } from "./utils";
 
 // For historical reasons we store the client ID and linker param in two global variables
 declare global {
@@ -42,7 +43,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                     }
                 }
                 // Dispatch an event to notify that we have the tracking parameters available
-                document.dispatchEvent(new Event('accor_tracking_params_available'));
+                utils.dispatchEvent('accor_tracking_params_available');
                 cback(cbackParams);
             });
         }
@@ -53,7 +54,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
     setTimeout(function() {
         if (typeof clientIdInterval !== 'undefined' && clientIdInterval !== null) {
             clearInterval(clientIdInterval);
-            document.dispatchEvent(new Event('accor_tracking_params_available'));
+            utils.dispatchEvent('accor_tracking_params_available');
             cback(cbackParams);
         }
     }, 10000);
