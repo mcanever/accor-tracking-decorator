@@ -11,8 +11,10 @@
 - [Public methods](#public-methods)
   * [`_AccorTrackingDecorator.decorateUrl(url, extraParams)`](#_accortrackingdecoratordecorateurlurl-extraparams)
   * [`_AccorTrackingDecorator.decorateObject(obj, extraParams)`](#_accortrackingdecoratordecorateobjectobj-extraparams)
+  * [`_AccorTrackingDecorator.decorateAll()`](#_accortrackingdecoratordecorateall)
 - [Cookies](#cookies)
 - [Browser support](#browser-support)
+- [Authors](#authors)
 
 <!-- tocstop -->
 
@@ -21,10 +23,12 @@ add parameters required for correct tracking to any link to the Accor booking fu
 
 ## Installation 
 
-The script can be included as an async tag in every page
+The script should be included as an async script tag in every page.
+
+**The bundle is available in the `dist` folder of this repository.**
 
 ``` html
-<script async src="js/decorator.js"></script>
+<script async src="$path_to_js_files/decorator.js"></script>
 ```
 
 ## Configuration
@@ -183,8 +187,15 @@ var decorated = _AccorTrackingDecorator.decorateObject(origParams, {merchantid: 
     sourceid: 'SID_testsid',
     gacid: '849328042.1581445420',
     _ga: '2.255469325.462718810.1582212053-849328042.1581445420'
-}    
+} 
+ 
+*/  
 ```
+
+### `_AccorTrackingDecorator.decorateAll()`
+
+Adds the tracking parameters to all links on the page ( `<a href="">` ). 
+This can be used if you have `autoDecorate` disabled or if you append new links to the document dynamically.
 
 ## Cookies
 
@@ -204,3 +215,8 @@ To read the sourceid from the cookie:
 ## Browser support
 
 This script won't fully work on Internet Explorer 10 or lower. IE11 is supported.
+
+## Authors
+
+Matteo Canever
+Andrea Baccega
