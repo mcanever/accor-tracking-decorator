@@ -114,6 +114,79 @@ QQ, Instagram, QZONE, Tumblr, Twitter, Baidu, Sina Weibo, Snapchat, VK, Linkedin
 be respectively `SEO_$SEARCHENGINE` OR `SOCIAL_$SOCIALNAME` (where $SEARCHENGINE and $SOCIALNAME are the 
 UPPERCASE name of the source)
 
+## Public methods
+
+### `_AccorTrackingDecorator.decorateUrl(url, extraParams)`
+
+Adds the tracking parameters to the passed `url` (string). If the `extraParams` object is passed, those parameters
+will be added to the URL too. `extraParams` allows overriding the parameters calculated by the script, too. This is 
+useful if your page has links for multiple hotels.
+
+**Example:**
+
+``` javascript
+var origUrl = 'https://all.accor.com/lien_externe.svlt?destination=12345&goto=rech_resa';
+var decorated = _AccorTrackingDecorator.decorateUrl(origURL, {merchantid: 'MS-12345'});
+
+/* decorated: 
+https://all.accor.com/lien_externe.svlt?destination=12345&goto=rech_resa
+    &utm_source=hotelwebsite%5B12345%5D
+    &utm_campaign=hotel%20website%20search
+    &utm_medium=accor%20regional%20websites
+    &merchantid=MS-12345
+    &sourceid=SID_testsid
+    &gacid=849328042.1581445420
+    &_ga=2.255469325.462718810.1582212053-849328042.1581445420
+*/    
+    
+```
+
+### `_AccorTrackingDecorator.decorateObject(obj, extraParams)`
+
+Adds the tracking parameters to the passed `obj` (object). If the `extraParams` object is passed, those parameters
+will be added to the object too. `extraParams` allows overriding the parameters calculated by the script, too. This is 
+useful if your page has links for multiple hotels.
+
+**Example:**
+
+``` javascript
+var origParams = {
+    destination: '12345',
+    goto: 'rech_resa',
+};
+
+var decorated = _AccorTrackingDecorator.decorateObject(origParams, {merchantid: 'MS-12345'});
+
+/* decorated: 
+
+{
+    destination: '12345',
+    goto: 'rech_resa',
+    utm_source: 'hotelwebsite[12345],
+    utm_campaign: 'hotel website search',
+    utm_medium: 'accor regional websites',
+    merchantid: 'MS-12345',
+    sourceid: 'SID_testsid',
+    gacid: '849328042.1581445420',
+    _ga: '2.255469325.462718810.1582212053-849328042.1581445420'
+}    
+```
+
+## Cookies
+
+This script sets a single cookie `_AccorTrackingDecoratorData` which is used to store the sourceid.
+This cookie can be used to store other arbitrary data if needed:
+
+`_AccorTrackingDecorator.Store.set(key, value)`
+
+and 
+
+`_AccorTrackingDecorator.Store.get(key)`
+
+To read the sourceid from the cookie: 
+
+`_AccorTrackingDecorator.Store.get('sourceid')`
+
 ## Browser support
 
 This script won't fully work on Internet Explorer 10 or lower. IE11 is supported.

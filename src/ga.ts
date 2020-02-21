@@ -33,11 +33,14 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                     // We only need the value.
                     let linkerParam = trackers[0].get('linkerParam');
                     if (linkerParam) {
-                        var parts = linkerParam.split('=');
+                        // Added to support gtag.js
+                        const tuples = linkerParam.split('&');
+                        linkerParam = tuples[0];
+                        const parts = linkerParam.split('=');
                         if (parts.length == 2) {
                             linkerParam = parts[1];
                             source.AccorBooking_GUA_linkerParam = linkerParam;
-                            cbackParams._ga = clientId;
+                            cbackParams._ga = linkerParam;
                             logger.log('Detected linker param (_ga): ' + linkerParam);
                         }
                     }

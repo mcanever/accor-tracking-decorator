@@ -87,12 +87,7 @@ export class Decorator {
             fired = true;
             setTimeout(() => this.decorateAll(), 300);
         };
-
-        if (this.config.handleGoogleAnalytics) {
-            document.addEventListener('accor_tracking_params_available', cback);
-        } else {
-            utils.onDomReady(cback);
-        }
+        document.addEventListener('accor_tracking_params_available', cback);
     }
 
     /**
@@ -176,5 +171,9 @@ export class Decorator {
 
         const referrer = this.config.testReferrer !== '' ? this.config.testReferrer : document.referrer;
         this.trackingParams.sourceid = Attribution.getSourceId(referrer);
+
+        if (!this.config.handleGoogleAnalytics){
+            utils.dispatchEvent('accor_tracking_params_available');
+        }
     }
 }

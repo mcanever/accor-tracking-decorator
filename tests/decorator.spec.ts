@@ -15,6 +15,7 @@ describe('Decorator', () => {
   const sandbox = sinon.createSandbox();
   beforeEach(() => {
     sandbox.restore();
+    sandbox.stub(utils, 'dispatchEvent').callsFake(() => {});
     nsSource = {_AccorTrackingDecorator: {config: {}}};
     namespace = new Namespace(nsSource);
     global.document = {
