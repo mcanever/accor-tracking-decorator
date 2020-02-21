@@ -54,5 +54,16 @@ export const utils = {
         else {
             document.addEventListener("DOMContentLoaded", callback);
         }
+    },
+    dispatchEvent: (type: string, target?: any) => {
+        target = target || document;
+        let event: any;
+        if(typeof(Event) === 'function') {
+            event = new Event(type);
+        } else {
+            event = document.createEvent('Event');
+            event.initEvent(type, true, true);
+        }
+        target.dispatchEvent(event);
     }
 };
