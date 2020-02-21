@@ -199,3 +199,8 @@ To read the sourceid from the cookie:
 ## Browser support
 
 This script won't fully work on Internet Explorer 10 or lower. IE11 is supported.
+
+## Authors
+
+Matteo Canever
+Andrea Baccega
