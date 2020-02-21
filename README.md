@@ -35,7 +35,7 @@ The script should be included as an async script tag in every page.
 ## Configuration
 
 The script requires a simple configuration, that should be specified as early as possible in your
-`<head>` tag. The script exposes a global variable _AccorTrackingDecorator which is used as a 
+`<head>` tag. The script exposes a global variable `_AccorTrackingDecorator` which is used as a 
 namespace for configuration and methods of the script. Example: 
 
 ``` html
