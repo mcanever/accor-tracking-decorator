@@ -5,25 +5,25 @@ declare global {
 }
 
 /**
- * Exposes properties and method to window
+ * Exposes properties and method to window (by default)
  */
 export class Namespace {
-    constructor() {
-        if (typeof window._AccorTrackingDecorator === 'undefined') {
-            window._AccorTrackingDecorator = {};
+    constructor(public source: any = window) {
+        if (typeof this.source._AccorTrackingDecorator === 'undefined') {
+            this.source._AccorTrackingDecorator = {};
         }
     }
 
     public get(name: string): any {
-        return window._AccorTrackingDecorator[name];
+        return this.source._AccorTrackingDecorator[name];
     }
 
     public set(name: string, value: any): any {
-        window._AccorTrackingDecorator[name] = value;
+        this.source._AccorTrackingDecorator[name] = value;
     }
 
     public getConfig(name: string): any {
         var config = this.get('config');
-        return (typeof config[name] !== 'undefined') ? config[name] : false;
+        return (typeof config !== 'undefined') && (typeof config[name] !== 'undefined') ? config[name] : false;
     }
 }

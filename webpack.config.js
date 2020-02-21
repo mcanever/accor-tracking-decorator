@@ -23,10 +23,10 @@ module.exports = function(env) {
 
 
     return {
-        entry: './src/decorator.ts',
+        entry: './src/init.ts',
         mode: webpackMode,
         watch: watch,
-        devtool: 'source-map',
+        devtool: webpackMode === 'development'? 'source-map': false,
         module: {
             rules: [
                 {

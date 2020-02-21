@@ -3,51 +3,30 @@ import { logger } from "./logger";
 import { Namespace } from './namespace';
 import { TrackingParams } from './types/trackingparams';
 import { Attribution } from "./attribution";
-import { Store } from "./store";
 import { utils } from "./utils";
 
+export type DecoratorConfig = {
+    merchantid: string,
+    hotelID: string,
+    autoDecorate: boolean,
+    debug: boolean,
+    handleGoogleAnalytics: boolean,
+    testReferrer: string,
+    domainsToDecorate: RegExp[],
+}
 /**
  * Main class to use for decorating any link going to all.accor.com with vital parameters that ensure tracking
  */
-class Decorator {
-    public static namespace: Namespace;
-    public static trackingParams: TrackingParams;
-    private static config: {
-        merchantid: string,
-        hotelID: string,
-        autoDecorate: boolean,
-        debug: boolean,
-        handleGoogleAnalytics: boolean,
-        testReferrer: string,
-        domainsToDecorate: RegExp[],
-    };
+export class Decorator {
+    private namespace: Namespace;
+    public trackingParams: TrackingParams;
+    public config: DecoratorConfig;
 
-    /**
-     * Initialize the decorator.
-     */
-    public static init() {
-        // Init namespace handler that will expose our public methods in the window
-        // window._AccorTrackingDecorator object
-        Decorator.namespace = new Namespace();
-
-        Decorator.namespace.set('decorateUrl', Decorator.decorateURL);
-        Decorator.namespace.set('decorateObject', Decorator.decorateObject);
-
-        Decorator.namespace.set('decorator', Decorator);
-        Decorator.namespace.set('Store', Store);
-        Decorator.namespace.set('utils', utils);
-
-        // Read configuration from global namespace
-        Decorator.initConfig();
-
-        logger.log('AccorTrackingDecorator config', Decorator.config);
-
-        // Initialize parameters
-        Decorator.initParameters();
-
-        if (Decorator.config.autoDecorate) {
-            Decorator.autoDecorate();
-        }
+    constructor(namespace: Namespace) {
+        this.namespace = namespace;
+        this.initConfig();
+        logger.log('AccorTrackingDecorator config', this.config);
+        this.initParameters();
     }
 
     /**
@@ -55,39 +34,23 @@ class Decorator {
      * Existing values will be overwritten, always.
      *
      * @param url (string) The URL to decorate
-     * @param recalculate (boolean, default = false) Force recalculation of parameters at the time of execution
-     * @param dontCheckDomain (boolean, default = false) Don't verify if domain is one of those that need decorated URLs
+     * @param extraParams (object) Adds/overrides some params to the url
      */
-    public static decorateURL(url: string, recalculate = false, dontCheckDomain = false): string {
+    public decorateURL(url: string, extraParams: {[key : string]: string} = {}): string {
         const u = utils.parseUrlParts(url);
         if (!u.hostname || u.hostname === '') {
             return url;
         }
-        const cleanHostname = u.hostname.toLowerCase();
-
-        let validDomain = false;
-        if (dontCheckDomain) {
-            validDomain = true
-        } else {
-            Decorator.config.domainsToDecorate.forEach((re: RegExp) => {
-                if (re.test(cleanHostname)){
-                    validDomain = true;
-                }
-            });
+        let params = utils.getUrlVars(url);
+        params = this.decorateObject(params, extraParams);
+        const searchChunks: string[] = [];
+        for (let key in params) {
+            if (params.hasOwnProperty(key) && params[key] !== false && params[key] !== null && typeof params[key] == 'string') {
+                searchChunks.push(encodeURIComponent(key)+'='+encodeURIComponent(params[key]));
+            }
         }
-
-        if (validDomain) {
-            let params = utils.getUrlVars(url);
-            params = Decorator.decorateObject(params, recalculate);
-            const searchChunks: string[] = [];
-            for (let key in params) {
-                if (params.hasOwnProperty(key) && params[key] !== false && params[key] !== null && typeof params[key] == 'string') {
-                    searchChunks.push(encodeURIComponent(key)+'='+encodeURIComponent(params[key]));
-                }
-            }
-            if (searchChunks.length > 0) {
-                url = u.protocol + '//' + u.hostname + u.pathname + '?' + searchChunks.join('&') + u.hash;
-            }
+        if (searchChunks.length > 0) {
+            url = u.protocol + '//' + u.hostname + u.pathname + '?' + searchChunks.join('&') + (u.hash || '');
         }
 
         return url;
@@ -98,110 +61,119 @@ class Decorator {
      * Existing values will be overwritten, always.
      *
      * @param obj (string) The Query String parameters, as a javascript object, to decorate
-     * @param recalculate (boolean, default = false) Force recalculation of parameters at the time of execution
+     * @param extraParams (boolean, default = false) Force recalculation of parameters at the time of execution
      */
-    public static decorateObject(obj: any, recalculate = false): object {
+    public decorateObject(obj: {[key: string]: string}, extraParams: {[key : string]: string} = {}): object {
         if (typeof obj !== 'object' || obj === null) {
             return obj;
         }
-        if (recalculate) {
-            Decorator.initParameters();
-        }
-        for (let key in Decorator.trackingParams) {
-            if (Decorator.trackingParams.hasOwnProperty(key)) {
-                const value = (Decorator.trackingParams as any)[key];
-                obj[key] = value;
+        const curParams = {... this.trackingParams, ...extraParams};
+        for (let key in curParams) {
+            if (curParams.hasOwnProperty(key)) {
+                obj[key] = (curParams as any)[key];
             }
         }
+
         return obj;
     }
 
-    static autoDecorate() {
+    public autoDecorate() {
         let fired = false;
         const cback = () => {
             if (fired) {
                 return;
             }
             fired = true;
-            setTimeout(() => {
-                logger.log('autoDecorate');
-                const allLinks = document.getElementsByTagName('a');
-                for (let i = 0; i < allLinks.length; i++) {
-                    const a = allLinks[i];
-                    const href = a.getAttribute('href');
-                    if (href !== null) {
-                        const newHref = Decorator.decorateURL(href);
-                        logger.log('Autodecorate', href, newHref);
-                        a.setAttribute('href', newHref);
-                    }
-                }
-            }, 300);
+            setTimeout(() => this.decorateAll(), 300);
         };
 
-        if (Decorator.config.handleGoogleAnalytics) {
+        if (this.config.handleGoogleAnalytics) {
             document.addEventListener('accor_tracking_params_available', cback);
         } else {
             utils.onDomReady(cback);
         }
     }
 
+    /**
+     * Programmatically decorates all links in the page matching the domainsToDecorate RegExp
+     */
+    public decorateAll() {
+        logger.log('decorateAll');
+        const allLinks = document.getElementsByTagName('a');
+        for (let i = 0; i < allLinks.length; i++) {
+            const a = allLinks[i];
+            const href = a.getAttribute('href');
+            if (href !== null) {
+                const hostname = utils.parseUrlParts(href).hostname.toLowerCase();
+                const validDomain = this.config.domainsToDecorate
+                  .map((re: RegExp) => re.test(hostname))
+                  .some((a) => a);
+                if (validDomain) {
+                    const newHref = this.decorateURL(href);
+                    logger.log('Autodecorate', href, newHref);
+                    a.setAttribute('href', newHref);
+                }
+            }
+        }
+    }
+
+
     // Read config from the global variable and set defaults with some smart detection
-    static initConfig() {
-        Decorator.config = {
-            merchantid: Decorator.namespace.getConfig('merchantid') || '',
-            hotelID: Decorator.namespace.getConfig('hotelID') || '',
-            autoDecorate: !!Decorator.namespace.getConfig('autoDecorate'),
-            debug: !!Decorator.namespace.getConfig('debug'),
-            handleGoogleAnalytics: Decorator.namespace.getConfig('handleGoogleAnalytics') !== false,
-            testReferrer: Decorator.namespace.getConfig('testReferrer') || '',
-            domainsToDecorate: Decorator.namespace.getConfig('domainsToDecorate') || [/^all\.accor\.com$/, /accorhotels.com$/],
+    private initConfig() {
+        this.config = {
+            merchantid: this.namespace.getConfig('merchantid') || '',
+            hotelID: this.namespace.getConfig('hotelID') || '',
+            autoDecorate: !!this.namespace.getConfig('autoDecorate'),
+            debug: !!this.namespace.getConfig('debug'),
+            handleGoogleAnalytics: this.namespace.getConfig('handleGoogleAnalytics') !== false,
+            testReferrer: this.namespace.getConfig('testReferrer') || '',
+            domainsToDecorate: this.namespace.getConfig('domainsToDecorate') || [/^all\.accor\.com$/, /accorhotels.com$/],
         };
 
         // Configure logger
-        logger.enabled = Decorator.config.debug;
+        logger.enabled = this.config.debug;
 
         // Force Uppercase to avoid ambiguous hotel IDs
-        Decorator.config.hotelID = Decorator.config.hotelID.toUpperCase();
-        Decorator.config.merchantid = Decorator.config.merchantid.toUpperCase();
+        this.config.hotelID = this.config.hotelID.toUpperCase();
+        this.config.merchantid = this.config.merchantid.toUpperCase();
 
         // Detect HotelID from config.merchantid
-        if (Decorator.config.hotelID === '' && Decorator.config.merchantid !== '') {
-            const matches = Decorator.config.merchantid.match(/^MS-([A-Z0-9]+)$/);
+        if (this.config.hotelID === '' && this.config.merchantid !== '') {
+            const matches = this.config.merchantid.match(/^MS-([A-Z0-9]+)$/);
             if (matches && matches.length == 2) {
-                Decorator.config.hotelID = matches[1];
-                logger.log('hotelID was empty, deriving it from merchantid: ', Decorator.config.hotelID);
+                this.config.hotelID = matches[1];
+                logger.log('hotelID was empty, deriving it from merchantid: ', this.config.hotelID);
             }
         }
 
         // Build merchantid from HotelID
-        if (Decorator.config.merchantid === '') {
+        if (this.config.merchantid === '') {
             logger.log('config.merchantid is empty!');
-            if (Decorator.config.hotelID !== '') {
-                Decorator.config.merchantid = 'MS-' + Decorator.config.hotelID;
-                logger.log('Using hotelID to set merchantid', Decorator.config.merchantid);
+            if (this.config.hotelID !== '') {
+                this.config.merchantid = 'MS-' + this.config.hotelID;
+                logger.log('Using hotelID to set merchantid', this.config.merchantid);
             }
         }
     }
 
     // Prepare the parameters based on the initial context and configuration
-    static initParameters() {
-        Decorator.trackingParams = {
-            utm_source: 'hotelwebsite[' + Decorator.config.hotelID + ']',
+    public initParameters() {
+        this.trackingParams = {
+            utm_source: 'hotelwebsite[' + this.config.hotelID + ']',
             utm_campaign: 'hotel website search',
             utm_medium: 'accor regional websites',
-            merchantid: Decorator.config.merchantid
+            merchantid: this.config.merchantid
         };
         // Detect Google Analytics _ga and gacid parameters
         detectGAParameters((params) =>  {
-            if (Decorator.config.handleGoogleAnalytics) {
-                Decorator.trackingParams.gacid = params.gacid;
-                Decorator.trackingParams._ga = params._ga;
+            if (this.config.handleGoogleAnalytics) {
+                this.trackingParams.gacid = params.gacid;
+                this.trackingParams._ga = params._ga;
             }
-            logger.log('AccorTrackingDecorator params', Decorator.trackingParams);
-        });
+            logger.log('AccorTrackingDecorator params', this.trackingParams);
+        }, this.namespace.source);
 
-        const referrer = Decorator.config.testReferrer !== '' ? Decorator.config.testReferrer : document.referrer;
-        Decorator.trackingParams.sourceid = Attribution.getSourceId(referrer);
+        const referrer = this.config.testReferrer !== '' ? this.config.testReferrer : document.referrer;
+        this.trackingParams.sourceid = Attribution.getSourceId(referrer);
     }
 }
-Decorator.init();

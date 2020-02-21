@@ -3,7 +3,9 @@ import Cookies from 'js-cookie';
 export const utils = {
     getUrlVars: (url: string) => {
         let vars: any = {};
-        const parts = url.replace(
+        const parts = url
+          .replace(/#.*?$/g, '')
+          .replace(
             /[?&]+([^=&]+)=([^&]*)/gi,
             (substring: string, key: string, value: string) => {
                 vars[key] = value;

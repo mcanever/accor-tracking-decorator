@@ -11,21 +11,21 @@ declare global {
 
 // Ported in typescript-ish from accor-booking/booking.js
 // Detects Google Analytics Client ID and Linker Param
-export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: string|false}) => void): void {
-    window.AccorBooking_GUA_ClientId = false;
-    window.AccorBooking_GUA_linkerParam = false;
+export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: string|false}) => void, source: any = window): void {
+    source.AccorBooking_GUA_ClientId = false;
+    source.AccorBooking_GUA_linkerParam = false;
     let cbackParams:{gacid: string|false,  _ga: string|false} = {gacid: false, _ga: false};
     //Wait for ga() to be available and get clientId
     let clientIdInterval = setInterval(function() {
-        if (typeof window.ga !== 'undefined') {
-            window.ga(function() {
-                let trackers = window.ga.getAll();
+        if (typeof source.ga !== 'undefined') {
+            source.ga(function() {
+                let trackers = source.ga.getAll();
                 // Get the client ID and Linker param from the first tracker
                 if (typeof trackers[0] !== 'undefined') {
                     clearInterval(clientIdInterval);
                     clientIdInterval = null;
                     let clientId = trackers[0].get('clientId')
-                    window.AccorBooking_GUA_ClientId = clientId;
+                    source.AccorBooking_GUA_ClientId = clientId;
                     cbackParams.gacid = clientId;
                     logger.log('Detected clientID (gacid): '+clientId);
                     // linkerParam returned from the tracker will look like _ga=1231234.234234.5235
@@ -35,7 +35,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                         var parts = linkerParam.split('=');
                         if (parts.length == 2) {
                             linkerParam = parts[1];
-                            window.AccorBooking_GUA_linkerParam = linkerParam;
+                            source.AccorBooking_GUA_linkerParam = linkerParam;
                             cbackParams._ga = clientId;
                             logger.log('Detected linker param (_ga): ' + linkerParam);
                         }

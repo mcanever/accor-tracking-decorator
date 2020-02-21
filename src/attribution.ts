@@ -137,10 +137,10 @@ export class Attribution {
     }
 
     public static getOrigin(): string {
-        return location.origin.toLowerCase();
+        return document.location.origin.toLowerCase();
     }
 
     public static getCurrentURL() {
-        return location.href;
+        return document.location.href;
     }
 }
