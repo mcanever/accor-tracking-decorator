@@ -85,8 +85,9 @@ class Decorator {
                     searchChunks.push(encodeURIComponent(key)+'='+encodeURIComponent(params[key]));
                 }
             }
+            const path = /^\//.test(u.pathname) ? u.pathname : '/' + u.pathname;
             if (searchChunks.length > 0) {
-                url = u.protocol + '//' + u.hostname + u.pathname + '?' + searchChunks.join('&') + u.hash;
+                url = u.protocol + '//' + u.hostname + path + '?' + searchChunks.join('&') + u.hash;
             }
         }
 
