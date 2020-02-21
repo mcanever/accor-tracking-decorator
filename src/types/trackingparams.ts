@@ -5,6 +5,5 @@ export type TrackingParams = {
     utm_source?: string|false
     utm_medium?: string|false
     utm_campaign?: string|false
-    partner_id?: string|false
     sourceid?: string,
 }
