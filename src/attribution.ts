@@ -26,11 +26,11 @@ export class Attribution {
         let saveInCookie = true;
 
         //Apply attributions rules based on previous scoring
-        if (get_url_merchantid_and_sourceid_category >= get_cookie_merchantid_and_sourceid_category) {
+        if (has_url_merchantid_and_sourceid && get_url_merchantid_and_sourceid_category >= get_cookie_merchantid_and_sourceid_category) {
             sourceid = url_sourceid;
             merchantid = url_merchantid;
             logger.log('sourceid from sourceid url parameter', sourceid);
-            logger.log('sourceid from merchantid url parameter', merchantid);          
+            logger.log('merchantid from merchantid url parameter', merchantid);          
         }
 
         else if (has_cookie_merchantid_and_sourceid) {
