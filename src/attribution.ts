@@ -3,26 +3,26 @@ import { utils } from "./utils";
 import { logger } from "./logger";
 
 export class Attribution {
-    public static getSourceAndMerchantIds(referrer: string): string {
-        const vars = utils.getUrlVars(Attribution.getCurrentURL());
+    public static getSourceAndMerchantIds(referrer: string): { sourceid: string, merchantid: string|false} {
+        const vars = utils.getUrlVars(this.getCurrentURL());
         const url_sourceid = vars.sourceid || null;
-        const url_merchantid = vars.merchantid || null; 
-        const has_url_merchantid_and_sourceid = !!url_sourceid && !!url_merchantid; 
+        const url_merchantid = vars.merchantid || null;
+        const has_url_merchantid_and_sourceid = !!url_sourceid && !!url_merchantid;
         const cookie_sourceid = Store.get('sourceid');
         const cookie_merchantid = Store.get('merchantid');
         const has_cookie_merchantid_and_sourceid = !!cookie_sourceid && !!cookie_merchantid;
 
         //Attribution rules - calculate score for cookies and url parameters values.
-        const get_url_merchantid_and_sourceid_category = has_url_merchantid_and_sourceid && /^(ppc-|dis-|sop-)/.test(url_merchantid) && 3 || (has_url_merchantid_and_sourceid || /^(ml-)/.test(url_sourceid)) && 2 || 1;                                                  
-        const get_cookie_merchantid_and_sourceid_category = has_cookie_merchantid_and_sourceid &&/^(ppc-|dis-|sop-)/.test(cookie_merchantid) && 3 || (has_cookie_merchantid_and_sourceid || /^(ml-)/.test(cookie_sourceid) ) && 2 || 1; 
+        const get_url_merchantid_and_sourceid_category = has_url_merchantid_and_sourceid && /^(ppc-|dis-|sop-)/.test(url_merchantid) && 3 || (has_url_merchantid_and_sourceid || /^(ml-)/.test(url_sourceid)) && 2 || 1;
+        const get_cookie_merchantid_and_sourceid_category = has_cookie_merchantid_and_sourceid &&/^(ppc-|dis-|sop-)/.test(cookie_merchantid) && 3 || (has_cookie_merchantid_and_sourceid || /^(ml-)/.test(cookie_sourceid) ) && 2 || 1;
         const get_url_utm_source = !!vars.utm_source && vars.utm_source || vars.dclid && 'dclid' || vars.gclid && 'gclid' || null  ;
         const cookie_sourceid_starts_with_utm = /^UTM_/.test(cookie_sourceid)
 
-        const referrer_source = Attribution.detectReferrer(referrer);
+        const referrer_source = this.detectReferrer(referrer);
 
         //Inital values
         let sourceid = 'Direct_Access';
-        let merchantid = false;
+        let merchantid: false | string = false;
         let saveInCookie = true;
 
         //Apply attributions rules based on previous scoring
@@ -30,7 +30,7 @@ export class Attribution {
             sourceid = url_sourceid;
             merchantid = url_merchantid;
             logger.log('sourceid from sourceid url parameter', sourceid);
-            logger.log('merchantid from merchantid url parameter', merchantid);          
+            logger.log('merchantid from merchantid url parameter', merchantid);
         }
 
         else if (has_cookie_merchantid_and_sourceid) {
@@ -39,9 +39,9 @@ export class Attribution {
             saveInCookie = false;
             logger.log('sourceid from sourceid cookie', sourceid);
             logger.log('merchantid from merchantid cookie', merchantid);
-        } 
+        }
 
-        //Fallback when the campaign is tracked but does not follow central standards. 
+        //Fallback when the campaign is tracked but does not follow central standards.
         else if (get_url_utm_source) {
             sourceid = 'UTM_' + get_url_utm_source;
             logger.log('sourceid from utm|dclid|gclid in url', sourceid);
@@ -53,13 +53,13 @@ export class Attribution {
             logger.log('sourceid from sourceid cookie with UTM', sourceid);
         }
 
-        //If no paid tracking parameters, the sourceid parameter will be defined by a referrer matching: one the top 10 search engine (Google, bing,Yahoo, Baidu, Yandex.ru, DuckDuckGo, Ask.com, AOL.com, WolframAlpha, Internet Archive) 
-        // or the top 10 social media network (Facebook, GQ, Instagram, QZONE, Tumblr, Twitter, Baidu, Sina Weibo, Snapchat) 
+        //If no paid tracking parameters, the sourceid parameter will be defined by a referrer matching: one the top 10 search engine (Google, bing,Yahoo, Baidu, Yandex.ru, DuckDuckGo, Ask.com, AOL.com, WolframAlpha, Internet Archive)
+        // or the top 10 social media network (Facebook, GQ, Instagram, QZONE, Tumblr, Twitter, Baidu, Sina Weibo, Snapchat)
         // the value will be respectively: SEO_$SEARCHENGINE OR SOCIAL_$SOCIALNAME (where $SEARCHENGINE and $SOCIALNAME are the UPPERCASE name of the source)
         else if (referrer_source !== null) {
                 sourceid = referrer_source.category + '_' + referrer_source.name;
                 logger.log('sourceid from referrer', sourceid);
-        } 
+        }
 
         sourceid = utils.normalizeString(sourceid);
         merchantid = !!merchantid && utils.normalizeString(merchantid);
@@ -69,9 +69,7 @@ export class Attribution {
             Store.set('sourceid', sourceid);
             Store.set('merchantid', merchantid);
         }
-        return { 'sourceid': sourceid,
-                 'merchantid': merchantid 
-               };
+        return { sourceid, merchantid };
     }
 
     public static detectReferrer(referrer: string): { category: string, name: string } {

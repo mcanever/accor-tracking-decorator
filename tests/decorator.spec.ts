@@ -82,7 +82,7 @@ describe('Decorator', () => {
       //   expect(d.trackingParams.gacid)
       // });
       it('should use Attribution to properly identify referrer', () => {
-        const stub = sandbox.stub(Attribution, 'getSourceId').returns('newSourceId');
+        const stub = sandbox.stub(Attribution, 'getSourceAndMerchantIds').returns({sourceid: 'newSourceId', merchantid: false });
         global.document.referrer = 'http://referrer.com';
         const d = new Decorator(namespace);
         expect(stub.calledWith('http://referrer.com')).true;
@@ -101,7 +101,7 @@ describe('Decorator', () => {
       expect(d.decorateObject(oibj)).deep.eq(oibj);
       expect(oibj).to.deep.eq({
         merchantid: 'MS-HOTELID',
-        sourceid: undefined,
+        sourceid: 'Direct_Access',
         utm_campaign: 'hotel website search',
         utm_medium: 'accor regional websites',
         utm_source: 'hotelwebsite[HOTELID]',
@@ -170,11 +170,11 @@ describe('Decorator', () => {
         expect(linkStub.setAttribute.called).true;
         expect(linkStub.setAttribute.firstCall.args[0]).eq('href');
         expect(linkStub.setAttribute.firstCall.args[1]).deep.eq(
-          link.toLowerCase() + '?utm_source=hotelwebsite%5BHOTELID%5D&utm_campaign=hotel%20website%20search&utm_medium=accor%20regional%20websites&merchantid=MS-HOTELID'
+          link.toLowerCase() + '?utm_source=hotelwebsite%5BHOTELID%5D&utm_campaign=hotel%20website%20search&utm_medium=accor%20regional%20websites&merchantid=MS-HOTELID&sourceid=Direct_Access'
         );
       }
       expect(linksStubs[9].setAttribute.firstCall.args[1]).deep.eq(
-        'http://accorhotels.com/test1?with=some&param=set&utm_source=hotelwebsite%5BHOTELID%5D&utm_campaign=hotel%20website%20search&utm_medium=accor%20regional%20websites&merchantid=MS-HOTELID#hash'
+        'http://accorhotels.com/test1?with=some&param=set&utm_source=hotelwebsite%5BHOTELID%5D&utm_campaign=hotel%20website%20search&utm_medium=accor%20regional%20websites&merchantid=MS-HOTELID&sourceid=Direct_Access#hash'
       );
 
       // Check non decorated links
