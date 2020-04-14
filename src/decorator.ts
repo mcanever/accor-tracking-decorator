@@ -170,7 +170,8 @@ export class Decorator {
         }, this.namespace.source);
 
         const referrer = this.config.testReferrer !== '' ? this.config.testReferrer : document.referrer;
-        this.trackingParams.sourceid = Attribution.getSourceId(referrer);
+        this.trackingParams.sourceid = Attribution.getSourceAndMerchantIds(referrer).sourceid;
+        this.trackingParams.merchantid = Attribution.getSourceAndMerchantIds(referrer).merchantid || this.trackingParams.merchantid;
 
         if (!this.config.handleGoogleAnalytics){
             utils.dispatchEvent('accor_tracking_params_available');

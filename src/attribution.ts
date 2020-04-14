@@ -3,82 +3,75 @@ import { utils } from "./utils";
 import { logger } from "./logger";
 
 export class Attribution {
-    public static getSourceId(referrer: string): string {
-        let sourceid = 'Direct_Access';
+    public static getSourceAndMerchantIds(referrer: string): string {
         const vars = utils.getUrlVars(Attribution.getCurrentURL());
         const url_sourceid = vars.sourceid || null;
+        const url_merchantid = vars.merchantid || null; 
+        const has_url_merchantid_and_sourceid = !!url_sourceid && !!url_merchantid; 
         const cookie_sourceid = Store.get('sourceid');
-        const has_utm_in_url = !!(vars.utm_source || vars.utm_campaign || vars.utm_medium);
-        const empty_cookie_sourceid = !!cookie_sourceid;
-        const cookie_sourceid_starts_with_sid = cookie_sourceid && /^SID/.test(cookie_sourceid);
-        const cookie_sourceid_starts_with_utm = cookie_sourceid && /^UTM/.test(cookie_sourceid);
+        const cookie_merchantid = Store.get('merchantid');
+        const has_cookie_merchantid_and_sourceid = !!cookie_sourceid && !!cookie_merchantid;
+
+        //Attribution rules - calculate score for cookies and url parameters values.
+        const get_url_merchantid_and_sourceid_category = has_url_merchantid_and_sourceid && /^(ppc-|dis-|sop-)/.test(url_merchantid) && 3 || (has_url_merchantid_and_sourceid || /^(ml-)/.test(url_sourceid)) && 2 || 1;                                                  
+        const get_cookie_merchantid_and_sourceid_category = has_cookie_merchantid_and_sourceid &&/^(ppc-|dis-|sop-)/.test(cookie_merchantid) && 3 || (has_cookie_merchantid_and_sourceid || /^(ml-)/.test(cookie_sourceid) ) && 2 || 1; 
+        const get_url_utm_source = !!vars.utm_source && vars.utm_source || vars.dclid && 'dclid' || vars.gclid && 'gclid' || null  ;
+        const cookie_sourceid_starts_with_utm = /^UTM_/.test(cookie_sourceid)
+
         const referrer_source = Attribution.detectReferrer(referrer);
 
+        //Inital values
+        let sourceid = 'Direct_Access';
+        let merchantid = false;
         let saveInCookie = true;
 
-        // If there is a sourceid parameter, stock the value in the cookie and replace the existing one as follow:
-        //SID_$sourceid where $sourceid is the value of the corresponding url parameter.
-        if (url_sourceid ) {
-            sourceid = 'SID_' +  url_sourceid;
+        //Apply attributions rules based on previous scoring
+        if (has_url_merchantid_and_sourceid && get_url_merchantid_and_sourceid_category >= get_cookie_merchantid_and_sourceid_category) {
+            sourceid = url_sourceid;
+            merchantid = url_merchantid;
             logger.log('sourceid from sourceid url parameter', sourceid);
+            logger.log('merchantid from merchantid url parameter', merchantid);          
         }
 
-        // If the value stocked in the cookie starts with SID
-        else if (cookie_sourceid_starts_with_sid) {
+        else if (has_cookie_merchantid_and_sourceid) {
+            sourceid = cookie_sourceid;
+            merchantid = cookie_merchantid;
+            saveInCookie = false;
+            logger.log('sourceid from sourceid cookie', sourceid);
+            logger.log('merchantid from merchantid cookie', merchantid);
+        } 
+
+        //Fallback when the campaign is tracked but does not follow central standards. 
+        else if (get_url_utm_source) {
+            sourceid = 'UTM_' + get_url_utm_source;
+            logger.log('sourceid from utm|dclid|gclid in url', sourceid);
+        }
+
+        else if (cookie_sourceid_starts_with_utm) {
             sourceid = cookie_sourceid;
             saveInCookie = false;
-            logger.log('sourceid from sourceid cookie with SID', sourceid);
-        } else {
-            //If there is a utm parameter (and no value stocked in the cookie or its value does not start with SID because of the last two if statement),
-            //stock a value that concatenates the parameters as follow: UTM_$utm_source_$utm_medium_$utm_campaign
-            //where $utm_source, $utm_medium and $utm_campaign are the value of the corresponding url parameters.
-            if (has_utm_in_url) {
-                sourceid = 'UTM_' + (vars.utm_source || '') + '_' + (vars.utm_medium || '') + '_' + (vars.utm_campaign || '');
-                logger.log('sourceid from utm_ in url', sourceid);
-            }
+            logger.log('sourceid from sourceid cookie with UTM', sourceid);
+        }
 
-            // If there is a dclid parameter (and no utm, no value stocked in the cookie or its value does not starts with SID),
-            //stock a value "UTM_DCLID"
-            else if (vars.dclid ) {
-                sourceid = 'UTM_DCLID';
-                logger.log('sourceid from dclid in url', sourceid);
-            }
-
-            //If there is a gclid parameter (and no utm, no value stocked in the cookie or its value does not starts with SID),
-            // value UTM_GCLID
-            else if (vars.gclid) {
-                sourceid = 'UTM_GCLID';
-                logger.log('sourceid from gclid in url', sourceid);
-            }
-
-            //If the cookie value starts with UTM keeps its value
-            else if (cookie_sourceid_starts_with_utm) {
-                sourceid = cookie_sourceid;
-                saveInCookie = false;
-                logger.log('sourceid from sourceid cookie with UTM', sourceid);
-            }
-
-            //If the referrer match one the top 10 search engine (and there is there is no sourceid and no utm parameter in both cookie and url parameters and no gclid or dclid parameters)
-            //(Google, bing,Yahoo, Baidu, Yandex.ru, DuckDuckGo, Ask.com, AOL.com, WolframAlpha, Internet Archive) or the top 10 social media
-            // network (Facebook, GQ, Instagram, QZONE, Tumblr, Twitter, Baidu, Sina Weibo, Snapchat) the value will be respectively
-            // SEO_$SEARCHENGINE OR SOCIAL_$SOCIALNAME (where $SEARCHENGINE and $SOCIALNAME are the UPPERCASE name of the source)
-            else if (referrer_source !== null) {
+        //If no paid tracking parameters, the sourceid parameter will be defined by a referrer matching: one the top 10 search engine (Google, bing,Yahoo, Baidu, Yandex.ru, DuckDuckGo, Ask.com, AOL.com, WolframAlpha, Internet Archive) 
+        // or the top 10 social media network (Facebook, GQ, Instagram, QZONE, Tumblr, Twitter, Baidu, Sina Weibo, Snapchat) 
+        // the value will be respectively: SEO_$SEARCHENGINE OR SOCIAL_$SOCIALNAME (where $SEARCHENGINE and $SOCIALNAME are the UPPERCASE name of the source)
+        else if (referrer_source !== null) {
                 sourceid = referrer_source.category + '_' + referrer_source.name;
                 logger.log('sourceid from referrer', sourceid);
-            } else if (!empty_cookie_sourceid) {
-                // Last chance: use the value from the cookie if not empty
-                sourceid = cookie_sourceid;
-                saveInCookie = false;
-                logger.log('sourceid from cookie value', sourceid);
-            }
-        }
+        } 
+
         sourceid = utils.normalizeString(sourceid);
+        merchantid = !!merchantid && utils.normalizeString(merchantid);
 
         // Save in cookie
         if (saveInCookie) {
             Store.set('sourceid', sourceid);
+            Store.set('merchantid', merchantid);
         }
-        return sourceid;
+        return { 'sourceid': sourceid,
+                 'merchantid': merchantid 
+               };
     }
 
     public static detectReferrer(referrer: string): { category: string, name: string } {
