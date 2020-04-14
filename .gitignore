@@ -3,3 +3,4 @@ dist
 !dist/decorator.js.map
 node_modules
 .idea
+.DS_Store
