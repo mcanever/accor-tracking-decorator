@@ -131,7 +131,6 @@ export class Decorator {
 
         // Force Uppercase to avoid ambiguous hotel IDs
         this.config.hotelID = this.config.hotelID.toUpperCase();
-        this.config.merchantid = this.config.merchantid.toUpperCase();
 
         // Detect HotelID from config.merchantid
         if (this.config.hotelID === '' && this.config.merchantid !== '') {
