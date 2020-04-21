@@ -3,43 +3,34 @@ import { utils } from "./utils";
 import { logger } from "./logger";
 
 export class Attribution {
-    public static getSourceAndMerchantIds(referrer: string): { sourceid: string, merchantid: string|false} {
+    public static getScore(data: { sourceid: string, merchantid: string| undefined }): 3|2|1 {
+        const hasBoth = !!data.sourceid && !! data.merchantid;
+        return hasBoth &&/^(ppc-|dis-|sop-)/.test(data.merchantid) && 3 || (hasBoth || /^(ml-)/.test(data.sourceid) ) && 2 || 1;
+    }
+
+    public static detectAttributonFromReferrer(referrer: string): { sourceid: string, merchantid: string|undefined} {
         const vars = utils.getUrlVars(this.getCurrentURL());
         const url_sourceid = vars.sourceid || null;
         const url_merchantid = vars.merchantid || null;
         const has_url_merchantid_and_sourceid = !!url_sourceid && !!url_merchantid;
-        const cookie_sourceid = Store.get('sourceid');
-        const cookie_merchantid = Store.get('merchantid');
-        const has_cookie_merchantid_and_sourceid = !!cookie_sourceid && !!cookie_merchantid;
 
         //Attribution rules - calculate score for cookies and url parameters values.
-        const get_url_merchantid_and_sourceid_category = has_url_merchantid_and_sourceid && /^(ppc-|dis-|sop-)/.test(url_merchantid) && 3 || (has_url_merchantid_and_sourceid || /^(ml-)/.test(url_sourceid)) && 2 || 1;
-        const get_cookie_merchantid_and_sourceid_category = has_cookie_merchantid_and_sourceid &&/^(ppc-|dis-|sop-)/.test(cookie_merchantid) && 3 || (has_cookie_merchantid_and_sourceid || /^(ml-)/.test(cookie_sourceid) ) && 2 || 1;
         const get_url_utm_source = !!vars.utm_source && vars.utm_source || vars.dclid && 'dclid' || vars.gclid && 'gclid' || null  ;
-        const cookie_sourceid_starts_with_utm = /^UTM_/.test(cookie_sourceid)
 
         const referrer_source = this.detectReferrer(referrer);
 
         //Inital values
         let sourceid = 'Direct_Access';
-        let merchantid: false | string = false;
-        let saveInCookie = true;
+        let merchantid: undefined | string;
 
         //Apply attributions rules based on previous scoring
-        if (has_url_merchantid_and_sourceid && get_url_merchantid_and_sourceid_category >= get_cookie_merchantid_and_sourceid_category) {
+        if (has_url_merchantid_and_sourceid ) {
             sourceid = url_sourceid;
             merchantid = url_merchantid;
             logger.log('sourceid from sourceid url parameter', sourceid);
             logger.log('merchantid from merchantid url parameter', merchantid);
         }
 
-        else if (has_cookie_merchantid_and_sourceid) {
-            sourceid = cookie_sourceid;
-            merchantid = cookie_merchantid;
-            saveInCookie = false;
-            logger.log('sourceid from sourceid cookie', sourceid);
-            logger.log('merchantid from merchantid cookie', merchantid);
-        }
 
         //Fallback when the campaign is tracked but does not follow central standards.
         else if (get_url_utm_source) {
@@ -47,11 +38,6 @@ export class Attribution {
             logger.log('sourceid from utm|dclid|gclid in url', sourceid);
         }
 
-        else if (cookie_sourceid_starts_with_utm) {
-            sourceid = cookie_sourceid;
-            saveInCookie = false;
-            logger.log('sourceid from sourceid cookie with UTM', sourceid);
-        }
 
         //If no paid tracking parameters, the sourceid parameter will be defined by a referrer matching: one the top 10 search engine (Google, bing,Yahoo, Baidu, Yandex.ru, DuckDuckGo, Ask.com, AOL.com, WolframAlpha, Internet Archive)
         // or the top 10 social media network (Facebook, GQ, Instagram, QZONE, Tumblr, Twitter, Baidu, Sina Weibo, Snapchat)
@@ -64,11 +50,7 @@ export class Attribution {
         sourceid = utils.normalizeString(sourceid);
         merchantid = !!merchantid && utils.normalizeString(merchantid);
 
-        // Save in cookie
-        if (saveInCookie) {
-            Store.set('sourceid', sourceid);
-            Store.set('merchantid', merchantid);
-        }
+
         return { sourceid, merchantid };
     }
 

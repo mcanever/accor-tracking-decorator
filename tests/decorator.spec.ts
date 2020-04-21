@@ -43,10 +43,10 @@ describe('Decorator', () => {
       it('handles merchant id', () => {
         nsSource._AccorTrackingDecorator.config.merchantid = 'meow';
         const d = new Decorator(namespace);
-        expect(d.config.merchantid).eq('MEOW');
+        expect(d.config.merchantid).eq('meow');
       });
       it('handles hotel id and derives merchant', () => {
-        nsSource._AccorTrackingDecorator.config.hotelID = 'meow';
+        nsSource._AccorTrackingDecorator.config.hotelID = 'MEOW';
         const d = new Decorator(namespace);
         expect(d.config.hotelID).eq('MEOW');
         expect(d.config.merchantid).eq('MS-MEOW');
@@ -82,7 +82,7 @@ describe('Decorator', () => {
       //   expect(d.trackingParams.gacid)
       // });
       it('should use Attribution to properly identify referrer', () => {
-        const stub = sandbox.stub(Attribution, 'getSourceAndMerchantIds').returns({sourceid: 'newSourceId', merchantid: false });
+        const stub = sandbox.stub(Attribution, 'detectAttributonFromReferrer').returns({sourceid: 'newSourceId', merchantid: undefined });
         global.document.referrer = 'http://referrer.com';
         const d = new Decorator(namespace);
         expect(stub.calledWith('http://referrer.com')).true;

@@ -172,12 +172,20 @@ export class Decorator {
         const referrer = this.config.testReferrer !== '' ? this.config.testReferrer : document.referrer;
 
         // Save in cookie
-        if (saveInCookie) {
-            Store.set('sourceid', sourceid);
-            Store.set('merchantid', merchantid);
+        const referrerData = Attribution.detectAttributonFromReferrer(referrer);
+        referrerData.merchantid = referrerData.merchantid || this.trackingParams.merchantid;
+        const storeData =  {
+            sourceid: Store.get('sourceid'),
+            merchantid: Store.get('merchantid')
+        };
+
+        if (Attribution.getScore(referrerData) >= Attribution.getScore(storeData)) {
+            Store.set('sourceid', referrerData.sourceid);
+            Store.set('merchantid', referrerData.merchantid);
         }
-        this.trackingParams.sourceid = Attribution.detectAttributonFromReferrer(referrer).sourceid;
-        this.trackingParams.merchantid = Attribution.detectAttributonFromReferrer(referrer).merchantid || this.trackingParams.merchantid;
+
+        this.trackingParams.sourceid = Store.get('sourceid');
+        this.trackingParams.merchantid = Store.get('merchantid');
 
         if (!this.config.handleGoogleAnalytics){
             utils.dispatchEvent('accor_tracking_params_available');
