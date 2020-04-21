@@ -4,6 +4,7 @@ import { Namespace } from './namespace';
 import { TrackingParams } from './types/trackingparams';
 import { Attribution } from "./attribution";
 import { utils } from "./utils";
+import { Store } from './store';
 
 export type DecoratorConfig = {
     merchantid: string,
@@ -170,8 +171,14 @@ export class Decorator {
         }, this.namespace.source);
 
         const referrer = this.config.testReferrer !== '' ? this.config.testReferrer : document.referrer;
-        this.trackingParams.sourceid = Attribution.getSourceAndMerchantIds(referrer).sourceid;
-        this.trackingParams.merchantid = Attribution.getSourceAndMerchantIds(referrer).merchantid || this.trackingParams.merchantid;
+
+        // Save in cookie
+        if (saveInCookie) {
+            Store.set('sourceid', sourceid);
+            Store.set('merchantid', merchantid);
+        }
+        this.trackingParams.sourceid = Attribution.detectAttributonFromReferrer(referrer).sourceid;
+        this.trackingParams.merchantid = Attribution.detectAttributonFromReferrer(referrer).merchantid || this.trackingParams.merchantid;
 
         if (!this.config.handleGoogleAnalytics){
             utils.dispatchEvent('accor_tracking_params_available');
