@@ -12,6 +12,22 @@ describe('Attribution', () => {
         Attribution.getOrigin = oldFn;
     });
 
+    describe('getScore', () => {
+       it ('should return 1', () => {
+           expect(Attribution.getScore({sourceid: undefined, merchantid: undefined})).eq(1);
+           expect(Attribution.getScore({sourceid: 'invalid', merchantid: 'invalid'})).eq(1);
+           expect(Attribution.getScore({sourceid: 'invalid', merchantid: undefined})).eq(1);
+           expect(Attribution.getScore({sourceid: undefined, merchantid: 'invalid'})).eq(1);
+       });
+       it('should return 2 if sourceid ok', () => {
+           expect(Attribution.getScore({sourceid: 'ml-test', merchantid: undefined})).eq(2);
+       });
+       it('should return 3 if all set and ok', () => {
+           expect(Attribution.getScore({sourceid: 'ml-test', merchantid: 'ppc-one'})).eq(3);
+           expect(Attribution.getScore({sourceid: 'ml-test', merchantid: 'dis-hello'})).eq(3);
+           expect(Attribution.getScore({sourceid: 'ml-test', merchantid: 'sop-meow'})).eq(3);
+       });
+    });
     describe('detectReferrer', () => {
         // TODO: Add many more urls based on more research
         const validURLs:any = {
