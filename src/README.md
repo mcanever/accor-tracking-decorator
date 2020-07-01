@@ -13,13 +13,13 @@ The bundle is available in the `dist` folder of this repository.
 
 **We recommend loading the script from the provided CDN in order to benefit from updates:**
 
-## Stable version
+### Stable version
 
 ``` html
 <script async src="http://staticaws.fbwebprogram.com/accor_tracking_decorator/decorator.js"></script>
 ```
 
-# Development version
+### Development version
 
 ``` html
 <script async src="http://staticaws.fbwebprogram.com/accor_tracking_decorator_dev/decorator.js"></script>

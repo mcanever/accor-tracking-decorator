@@ -3,20 +3,20 @@
 
 <!-- toc -->
 
-  * [Installation](#installation)
+- [Installation](#installation)
   * [Stable version](#stable-version)
-- [Development version](#development-version)
-  * [Configuration](#configuration)
-    + [Configuration flags](#configuration-flags)
-  * [Parameters added by the decorator](#parameters-added-by-the-decorator)
-  * [Public methods](#public-methods)
-    + [`_AccorTrackingDecorator.decorateUrl(url, extraParams)`](#_accortrackingdecoratordecorateurlurl-extraparams)
-    + [`_AccorTrackingDecorator.decorateObject(obj, extraParams)`](#_accortrackingdecoratordecorateobjectobj-extraparams)
-    + [`_AccorTrackingDecorator.decorateAll()`](#_accortrackingdecoratordecorateall)
-  * [Cookies](#cookies)
-  * [Browser support](#browser-support)
-  * [Authors](#authors)
-  * [How to build](#how-to-build)
+  * [Development version](#development-version)
+- [Configuration](#configuration)
+  * [Configuration flags](#configuration-flags)
+- [Parameters added by the decorator](#parameters-added-by-the-decorator)
+- [Public methods](#public-methods)
+  * [`_AccorTrackingDecorator.decorateUrl(url, extraParams)`](#_accortrackingdecoratordecorateurlurl-extraparams)
+  * [`_AccorTrackingDecorator.decorateObject(obj, extraParams)`](#_accortrackingdecoratordecorateobjectobj-extraparams)
+  * [`_AccorTrackingDecorator.decorateAll()`](#_accortrackingdecoratordecorateall)
+- [Cookies](#cookies)
+- [Browser support](#browser-support)
+- [Authors](#authors)
+- [How to build](#how-to-build)
 
 <!-- tocstop -->
 
@@ -31,13 +31,13 @@ The bundle is available in the `dist` folder of this repository.
 
 **We recommend loading the script from the provided CDN in order to benefit from updates:**
 
-## Stable version
+### Stable version
 
 ``` html
 <script async src="http://staticaws.fbwebprogram.com/accor_tracking_decorator/decorator.js"></script>
 ```
 
-# Development version
+### Development version
 
 ``` html
 <script async src="http://staticaws.fbwebprogram.com/accor_tracking_decorator_dev/decorator.js"></script>
