@@ -5,7 +5,21 @@ import { logger } from "./logger";
 export class Attribution {
     public static getScore(data: { sourceid: string, merchantid: string| undefined }): 3|2|1 {
         const hasBoth = !!data.sourceid && !! data.merchantid;
-        return hasBoth &&/^(ppc-|dis-|sop-)/.test(data.merchantid) && 3 || (hasBoth || /^(ml-)/.test(data.sourceid) ) && 2 || 1;
+
+        // Code style of the following conditions is purposely not concise to improve readability
+
+        // If sourceid and merchantid are both present and merchantid starts with ppc-, dis- or sop- , score is 3
+        if (hasBoth && /^(ppc-|dis-|sop-)/.test(data.merchantid) ) {
+            return 3;
+        }
+        // If sourceid and merchantid are both present or sourceid starts with ml- , score is 2
+        else if (hasBoth || /^(ml-)/.test(data.sourceid)) {
+            return 2;
+        }
+        // Return 1 in all other cases
+        else {
+            return 1;
+        }
     }
 
     public static detectAttributonFromReferrer(referrer: string): { sourceid: string, merchantid: string|undefined} {

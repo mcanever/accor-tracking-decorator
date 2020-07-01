@@ -179,7 +179,9 @@ export class Decorator {
             merchantid: Store.get('merchantid')
         };
 
-        if (Attribution.getScore(referrerData) > Attribution.getScore(storeData)) {
+        logger.log('Are referrer and location equal ?', utils.areReferrerAndLocationEqual(referrer));
+
+        if (Attribution.getScore(referrerData) >= Attribution.getScore(storeData) && !utils.areReferrerAndLocationEqual(referrer) ) {
             Store.set('sourceid', referrerData.sourceid);
             Store.set('merchantid', referrerData.merchantid);
         }

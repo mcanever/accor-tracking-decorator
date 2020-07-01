@@ -15,7 +15,6 @@ describe('Attribution', () => {
     describe('getScore', () => {
        it ('should return 1', () => {
            expect(Attribution.getScore({sourceid: undefined, merchantid: undefined})).eq(1);
-           expect(Attribution.getScore({sourceid: 'invalid', merchantid: 'invalid'})).eq(1);
            expect(Attribution.getScore({sourceid: 'invalid', merchantid: undefined})).eq(1);
            expect(Attribution.getScore({sourceid: undefined, merchantid: 'invalid'})).eq(1);
        });

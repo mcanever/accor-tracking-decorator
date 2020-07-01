@@ -67,5 +67,18 @@ export const utils = {
             event.initEvent(type, true, true);
         }
         target.dispatchEvent(event);
+    },
+    areReferrerAndLocationEqual: (referrer: string): boolean => {
+        // We aren't using new URL() because of browser compatibility
+        try {
+            let referrerOrigin = '';
+            if (/^https?:\/\//.test(referrer)) {
+                const url = utils.parseUrlParts(referrer);
+                referrerOrigin = url.origin;
+            }
+            return (referrerOrigin === location.origin);
+        } catch (invalid_url_error) {
+            return false;
+        }
     }
 };
