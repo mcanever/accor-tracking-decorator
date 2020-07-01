@@ -91,9 +91,9 @@ _AccorTrackingDecorator.config = {
 - `sourceid` Calculated dynamically based on the attribution rules
 - `_ga` Google Analytics Linker parameter. Only if `config.handleGoogleAnalytics` is true
 - `gacid` Google Analytics Linker client id. Only if `config.handleGoogleAnalytics` is true
-- `utm_source` will be set to `hotelwebsite[$hotelID]` 
-- `utm_medium` will be set to `accor regional websites`
-- `utm_campaign`  will be set to `hotel website search`
+- `utm_source` will be set to `hotelwebsite_$hotelID` 
+- `utm_medium` will be set to `accor_regional_websites`
+- `utm_campaign`  will be set to `hotel_website_search`
 
 ## Public methods
 
@@ -111,9 +111,9 @@ var decorated = _AccorTrackingDecorator.decorateUrl(origURL, {merchantid: 'MS-12
 
 /* decorated: 
 https://all.accor.com/lien_externe.svlt?destination=12345&goto=rech_resa
-    &utm_source=hotelwebsite%5B12345%5D
-    &utm_campaign=hotel%20website%20search
-    &utm_medium=accor%20regional%20websites
+    &utm_source=hotelwebsite_12345
+    &utm_campaign=hotel_website_search
+    &utm_medium=accor_regional_websites
     &merchantid=MS-12345
     &sourceid=SID_testsid
     &gacid=849328042.1581445420
@@ -143,9 +143,9 @@ var decorated = _AccorTrackingDecorator.decorateObject(origParams, {merchantid: 
 {
     destination: '12345',
     goto: 'rech_resa',
-    utm_source: 'hotelwebsite[12345],
-    utm_campaign: 'hotel website search',
-    utm_medium: 'accor regional websites',
+    utm_source: 'hotelwebsite_12345,
+    utm_campaign: 'hotel_website_search',
+    utm_medium: 'accor_regional_websites',
     merchantid: 'MS-12345',
     sourceid: 'SID_testsid',
     gacid: '849328042.1581445420',

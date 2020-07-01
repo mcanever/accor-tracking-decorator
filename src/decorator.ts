@@ -155,9 +155,9 @@ export class Decorator {
     // Prepare the parameters based on the initial context and configuration
     public initParameters() {
         this.trackingParams = {
-            utm_source: 'hotelwebsite[' + this.config.hotelID + ']',
-            utm_campaign: 'hotel website search',
-            utm_medium: 'accor regional websites',
+            utm_source: 'hotelwebsite_' + this.config.hotelID,
+            utm_campaign: 'hotel_website_search',
+            utm_medium: 'accor_regional_websites',
             merchantid: this.config.merchantid
         };
         // Detect Google Analytics _ga and gacid parameters

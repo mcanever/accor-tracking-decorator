@@ -72,9 +72,9 @@ describe('Decorator', () => {
       it('should initializa peroperly the ga utm params', () => {
         nsSource._AccorTrackingDecorator.config.hotelID = 'meow';
         const d = new Decorator(namespace);
-        expect(d.trackingParams.utm_source).eq('hotelwebsite[MEOW]');
-        expect(d.trackingParams.utm_campaign).eq('hotel website search');
-        expect(d.trackingParams.utm_medium).eq('accor regional websites');
+        expect(d.trackingParams.utm_source).eq('hotelwebsite_MEOW');
+        expect(d.trackingParams.utm_campaign).eq('hotel_website_search');
+        expect(d.trackingParams.utm_medium).eq('accor_regional_websites');
       });
       // it('should handleGa if requested', () => {
       //   nsSource._AccorTrackingDecorator.config.handleGoogleAnalytics = true;
@@ -102,9 +102,9 @@ describe('Decorator', () => {
       expect(oibj).to.deep.eq({
         merchantid: 'MS-HOTELID',
         sourceid: 'Direct_Access',
-        utm_campaign: 'hotel website search',
-        utm_medium: 'accor regional websites',
-        utm_source: 'hotelwebsite[HOTELID]',
+        utm_campaign: 'hotel_website_search',
+        utm_medium: 'accor_regional_websites',
+        utm_source: 'hotelwebsite_HOTELID',
       });
     });
     it('should allow override through extraParams', () => {
@@ -114,9 +114,9 @@ describe('Decorator', () => {
       expect(oibj).to.deep.eq({
         merchantid: 'MS-HOTELID',
         sourceid: 'thaSOURCE',
-        utm_campaign: 'hotel website search',
-        utm_medium: 'accor regional websites',
-        utm_source: 'hotelwebsite[HOTELID]',
+        utm_campaign: 'hotel_website_search',
+        utm_medium: 'accor_regional_websites',
+        utm_source: 'hotelwebsite_HOTELID',
       });
 
     });
@@ -127,9 +127,9 @@ describe('Decorator', () => {
       expect(oibj).to.deep.eq({
         merchantid: 'MS-HOTELID',
         sourceid: 'thaSOURCE',
-        utm_campaign: 'hotel website search',
-        utm_medium: 'accor regional websites',
-        utm_source: 'hotelwebsite[HOTELID]',
+        utm_campaign: 'hotel_website_search',
+        utm_medium: 'accor_regional_websites',
+        utm_source: 'hotelwebsite_HOTELID',
         fbtrack: 'code'
       });
     });
@@ -170,11 +170,11 @@ describe('Decorator', () => {
         expect(linkStub.setAttribute.called).true;
         expect(linkStub.setAttribute.firstCall.args[0]).eq('href');
         expect(linkStub.setAttribute.firstCall.args[1]).deep.eq(
-          link.toLowerCase() + '?utm_source=hotelwebsite%5BHOTELID%5D&utm_campaign=hotel%20website%20search&utm_medium=accor%20regional%20websites&merchantid=MS-HOTELID&sourceid=Direct_Access'
+          link.toLowerCase() + '?utm_source=hotelwebsite_HOTELID&utm_campaign=hotel_website_search&utm_medium=accor_regional_websites&merchantid=MS-HOTELID&sourceid=Direct_Access'
         );
       }
       expect(linksStubs[9].setAttribute.firstCall.args[1]).deep.eq(
-        'http://accorhotels.com/test1?with=some&param=set&utm_source=hotelwebsite%5BHOTELID%5D&utm_campaign=hotel%20website%20search&utm_medium=accor%20regional%20websites&merchantid=MS-HOTELID&sourceid=Direct_Access#hash'
+        'http://accorhotels.com/test1?with=some&param=set&utm_source=hotelwebsite_HOTELID&utm_campaign=hotel_website_search&utm_medium=accor_regional_websites&merchantid=MS-HOTELID&sourceid=Direct_Access#hash'
       );
 
       // Check non decorated links
