@@ -38,7 +38,7 @@ export class Attribution {
         let merchantid: undefined | string;
 
         //Apply attributions rules based on previous scoring
-        if (has_url_merchantid_and_sourceid ) {
+        if (has_url_merchantid_and_sourceid || /^(ml-)/.test(url_sourceid) ) {
             sourceid = url_sourceid;
             merchantid = url_merchantid;
             logger.log('sourceid from sourceid url parameter', sourceid);
