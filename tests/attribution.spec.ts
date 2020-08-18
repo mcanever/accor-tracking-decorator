@@ -31,7 +31,7 @@ describe('Attribution', () => {
         // TODO: Add many more urls based on more research
         const validURLs:any = {
             SOCIAL: {
-                FACEBOOK: ['https://www.facebook.com/MercureHotels.it/?brand_redir=279349972238988', 'https://www.facebook.COM/MercureHotels.it/?brand_redir=279349972238988'],
+                FACEBOOK: ['https://l.facebook.com/something', 'https://www.facebook.com/MercureHotels.it/?brand_redir=279349972238988', 'https://www.facebook.COM/MercureHotels.it/?brand_redir=279349972238988'],
                 QZONE: ['https://80111664.qzone.qq.com/311'],
                 QQ: ['https://new.qq.com/omn/20200218/20200218A0RSR400.html'],
                 INSTAGRAM: ['https://www.instagram.com/pullmandubaidcc/'],

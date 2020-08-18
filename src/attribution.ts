@@ -75,7 +75,7 @@ export class Attribution {
 
         const topReferrers: any = {
             SOCIAL: {
-                FACEBOOK: /^https?:\/\/(www\.)?facebook\.com\/.*$/i,
+                FACEBOOK: /^https?:\/\/((www|l)\.)?facebook\.com\/.*$/i,
                 QZONE: /^https?:\/\/[a-z0-9.]+qzone\.qq\.com(\/.*)?$/i,
                 QQ: /^https?:\/\/([a-z]+\.)?qq\.com(\/.*)?$/i,
                 INSTAGRAM: /^https?:\/\/(www\.)?instagram\.com\/.*$/i,
