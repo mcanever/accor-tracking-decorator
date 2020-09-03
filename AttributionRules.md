@@ -15,10 +15,10 @@ where $utm_source, $utm_medium and $utm_campaign are the value of the correspond
 That value is used as sourceid. 
 
 If there is a `dclid` parameter in the page URL (and no utm, no value stocked in the cookie or its 
-value does not start with SID), the script stocks a value `UTM_DCLID` and uses it as sourceid.
+value does not start with SID), the script stocks a value `UTM_dclid` and uses it as sourceid.
 
 If there is a `gclid` parameter in the page URL (and no utm, no value stocked in the cookie or its 
-value does not start with SID), the script stocks a value `UTM_GCLID` and uses it as sourceid.
+value does not start with SID), the script stocks a value `UTM_gclid` and uses it as sourceid.
 
 If the cookie value starts with UTM, the script will just use its value as sourceID
 

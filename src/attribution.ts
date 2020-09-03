@@ -28,7 +28,8 @@ export class Attribution {
         const has_url_merchantid_and_sourceid = !!url_sourceid && !!url_merchantid;
 
         //Attribution rules - calculate score for cookies and url parameters values.
-        const get_url_utm_source = !!vars.utm_source && vars.utm_source || vars.dclid && 'dclid' || vars.gclid && 'gclid' || null  ;
+        const utm_string = ( vars.utm_source || '' ) + '_' + ( vars.utm_medium || '' ) + '_' + ( vars.utm_campaign || '');
+        const get_url_utm_source = !!vars.utm_source && utm_string || vars.dclid && 'dclid' || vars.gclid && 'gclid' || null  ;
 
         const referrer_source = this.detectReferrer(referrer);
 

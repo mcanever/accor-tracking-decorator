@@ -14,6 +14,8 @@ export type DecoratorConfig = {
     handleGoogleAnalytics: boolean,
     testReferrer: string,
     domainsToDecorate: RegExp[],
+    isBrandSite?: boolean,
+    brandName?: string
 }
 /**
  * Main class to use for decorating any link going to all.accor.com with vital parameters that ensure tracking
@@ -125,6 +127,8 @@ export class Decorator {
             handleGoogleAnalytics: this.namespace.getConfig('handleGoogleAnalytics') !== false,
             testReferrer: this.namespace.getConfig('testReferrer') || '',
             domainsToDecorate: this.namespace.getConfig('domainsToDecorate') || [/^all\.accor\.com$/, /accorhotels.com$/],
+            isBrandSite: this.namespace.getConfig('isBrandSite') || false,
+            brandName: this.namespace.getConfig('brandName') || '',
         };
 
         // Configure logger
@@ -154,12 +158,21 @@ export class Decorator {
 
     // Prepare the parameters based on the initial context and configuration
     public initParameters() {
-        this.trackingParams = {
-            utm_source: 'hotelwebsite_' + this.config.hotelID,
-            utm_campaign: 'hotel_website_search',
-            utm_medium: 'accor_regional_websites',
-            merchantid: this.config.merchantid
-        };
+        if (this.config.isBrandSite) {
+            this.trackingParams = {
+                utm_source: this.config.brandName,
+                utm_campaign: 'brand_website_search',
+                utm_medium: 'accor_brands_websites',
+                merchantid: this.config.merchantid
+            };
+        } else {
+            this.trackingParams = {
+                utm_source: 'hotelwebsite_' + this.config.hotelID,
+                utm_campaign: 'hotel_website_search',
+                utm_medium: 'accor_regional_websites',
+                merchantid: this.config.merchantid
+            };
+        }
         // Detect Google Analytics _ga and gacid parameters
         detectGAParameters((params) =>  {
             if (this.config.handleGoogleAnalytics) {

@@ -85,6 +85,14 @@ _AccorTrackingDecorator.config = {
        false by default 
      */
     handleGoogleAnalytics: true,
+    
+    /* Set to true if the decorator is installed on an Accor Brand Site 
+       (E.G. Official portal for all Sofitel Hotels) 
+    */
+    isBrandSite: false,
+    
+    /* Set to the brand name (example: 'sofitel'). It has effect only if isBrandsite is true  */
+    brandName: '',
       
     /* Allow the script to log debug messages in console. false by default */
     debug: false,
@@ -109,9 +117,11 @@ _AccorTrackingDecorator.config = {
 - `sourceid` Calculated dynamically based on the attribution rules
 - `_ga` Google Analytics Linker parameter. Only if `config.handleGoogleAnalytics` is true
 - `gacid` Google Analytics Linker client id. Only if `config.handleGoogleAnalytics` is true
-- `utm_source` will be set to `hotelwebsite_$hotelID` 
-- `utm_medium` will be set to `accor_regional_websites`
-- `utm_campaign`  will be set to `hotel_website_search`
+- `utm_source` will be set to `hotelwebsite_$hotelID` or to `config.brandName` (as configured) if `config.isBrandSite` is true
+- `utm_medium` will be set to `accor_regional_websites` or to `accor_brands_websites` if `config.isBrandSite` is true
+- `utm_campaign`  will be set to `hotel_website_search` or to `brand_website_search` if `config.isBrandSite` is true
+
+Note: in the reference above, `config.***` refers to the decorator configuration values, as seen in the previous section.
 
 ## Public methods
 

@@ -8,7 +8,7 @@ export const utils = {
           .replace(
             /[?&]+([^=&]+)=([^&]*)/gi,
             (substring: string, key: string, value: string) => {
-                vars[key] = value;
+                vars[key] = decodeURIComponent(value);
                 return substring;
             });
         return vars;
