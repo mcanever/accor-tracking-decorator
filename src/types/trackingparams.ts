@@ -8,7 +8,6 @@ export type TrackingParams = {
     sourceid?: string
     merchantid?: string
     sourcid?: string
-    gacid?: string | false
     _ga?: string | false
 }
 export type TrackingParam = keyof TrackingParams;

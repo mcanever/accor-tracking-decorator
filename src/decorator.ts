@@ -141,10 +141,9 @@ export class Decorator {
     public initParameters() {
         this.trackingParams = {};
 
-        // Detect Google Analytics _ga and gacid parameters
+        // Detect Google Analytics _ga parameter
         detectGAParameters((params) =>  {
             if (this.config.handleGoogleAnalytics) {
-                this.trackingParams.gacid = params.gacid;
                 this.trackingParams._ga = params._ga;
             }
             logger.log('JoAndJoeTrackingDecorator params', this.trackingParams);

@@ -49,7 +49,7 @@ _JoAndJoeTrackingDecorator.config = {
     autoDecorate: true,
     
     /* Let the script take care of detecting Google Analytics Linker Param and Client ID
-       This will result in the parameters _ga and gacid being added to the links.
+       This will result in the parameter _ga being added to the links.
        false by default 
      */
     handleGoogleAnalytics: true,
@@ -85,17 +85,16 @@ _JoAndJoeTrackingDecorator.config = {
 ## Parameters added by default
 
 
-- utm_source
-- utm_content
-- utm_term
-- utm_medium
-- utm_campaign
-- utm_sourceid
-- sourceid
-- merchantid
-- sourcid
+- `utm_source` (if present in the current URL or stored in cookie)
+- `utm_content` (if present in the current URL or stored in cookie)
+- `utm_term` (if present in the current URL or stored in cookie)
+- `utm_medium` (if present in the current URL or stored in cookie)
+- `utm_campaign` (if present in the current URL or stored in cookie)
+- `utm_sourceid` (if present in the current URL or stored in cookie)
+- `sourceid` (if present in the current URL or stored in cookie)
+- `merchantid` (if present in the current URL or stored in cookie)
+- `sourcid` (if present in the current URL or stored in cookie)
 - `_ga` Google Analytics Linker parameter. Only if `config.handleGoogleAnalytics` is true
-- `gacid` Google Analytics Linker client id. Only if `config.handleGoogleAnalytics` is true
 
 Note: in the reference above, `config.***` refers to the decorator configuration values, as seen in the previous section.
 
@@ -120,7 +119,6 @@ https://www.secure-hotel-booking.com/smart/JO-JOE-Paris-Gentilly/2QKR/en/
     &utm_medium=accor_regional_websites
     &merchantid=MS-12345
     &sourceid=SID_testsid
-    &gacid=849328042.1581445420
     &_ga=2.255469325.462718810.1582212053-849328042.1581445420
 */    
     
@@ -152,7 +150,6 @@ var decorated = _JoAndJoeTrackingDecorator.decorateObject(origParams, {merchanti
     utm_medium: 'accor_regional_websites',
     merchantid: 'MS-12345',
     sourceid: 'SID_testsid',
-    gacid: '849328042.1581445420',
     _ga: '2.255469325.462718810.1582212053-849328042.1581445420'
 } 
  

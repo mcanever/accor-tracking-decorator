@@ -5,17 +5,16 @@ import { utils } from "./utils";
 declare global {
     interface Window {
         ga: any
-        JoAndJoeBooking_GUA_ClientId: string|false
         JoAndJoeBooking_GUA_linkerParam: string|false
     }
 }
 
 // Ported in typescript-ish from accor-booking/booking.js
 // Detects Google Analytics Client ID and Linker Param
-export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: string|false}) => void, source: any = window): void {
+export function detectGAParameters(cback: (params: {_ga: string|false}) => void, source: any = window): void {
     source.JoAndJoeBooking_GUA_ClientId = false;
     source.JoAndJoeBooking_GUA_linkerParam = false;
-    let cbackParams:{gacid: string|false,  _ga: string|false} = {gacid: false, _ga: false};
+    let cbackParams:{ _ga: string|false} = {_ga: false};
     //Wait for ga() to be available and get clientId
     let clientIdInterval = setInterval(function() {
         if (typeof source.ga !== 'undefined') {
@@ -25,10 +24,6 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                 if (typeof trackers[0] !== 'undefined') {
                     clearInterval(clientIdInterval);
                     clientIdInterval = null;
-                    let clientId = trackers[0].get('clientId')
-                    source.JoAndJoeBooking_GUA_ClientId = clientId;
-                    cbackParams.gacid = clientId;
-                    logger.log('Detected clientID (gacid): '+clientId);
                     // linkerParam returned from the tracker will look like _ga=1231234.234234.5235
                     // We only need the value.
                     let linkerParam = trackers[0].get('linkerParam');
