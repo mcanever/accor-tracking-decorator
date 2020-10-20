@@ -50,7 +50,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                 cback(cbackParams);
             });
         }
-    }, 50);
+    }, 200);
 
     //Cancel polling after 10 seconds (Google analytics may not be there or never load for some reason)
     //In this case we need to call the callback and dispatch the event anyways in case someone relies on this
