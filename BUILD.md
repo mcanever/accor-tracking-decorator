@@ -1,4 +1,4 @@
-# Accor Tracking Decorator utility
+# Jo and Joe Tracking Decorator utility
 
 This library is written in typescript, and will build as a javascript bundle.
 
@@ -14,14 +14,12 @@ YARN is the preferred package manager.
 ### Straightforward build:
 `yarn run build`
 
-### Watch and build in production mode into `dist/`
+### Watch and build in production mode into `joandjoe-dist/`
 `yarn run watch`
 
-### Watch and build in development mode into `build-dev/`
+### Watch and build in development mode into `joandjoe-build-dev/`
 `yarn run build-dev`
 
-## Unit tests
-`yarn run test`
 
 ## Add table of contents to README.md
 `yarn run toc`

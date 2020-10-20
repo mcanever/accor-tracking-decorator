@@ -1,6 +1,6 @@
 declare global {
     interface Window {
-        _AccorTrackingDecorator: any;
+        _JoAndJoeTrackingDecorator: any;
     }
 }
 
@@ -9,17 +9,17 @@ declare global {
  */
 export class Namespace {
     constructor(public source: any = window) {
-        if (typeof this.source._AccorTrackingDecorator === 'undefined') {
-            this.source._AccorTrackingDecorator = {};
+        if (typeof this.source._JoAndJoeTrackingDecorator === 'undefined') {
+            this.source._JoAndJoeTrackingDecorator = {};
         }
     }
 
     public get(name: string): any {
-        return this.source._AccorTrackingDecorator[name];
+        return this.source._JoAndJoeTrackingDecorator[name];
     }
 
     public set(name: string, value: any): any {
-        this.source._AccorTrackingDecorator[name] = value;
+        this.source._JoAndJoeTrackingDecorator[name] = value;
     }
 
     public getConfig(name: string): any {

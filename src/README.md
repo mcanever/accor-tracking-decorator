@@ -1,9 +1,9 @@
-# Accor Tracking Decorator utility
+# Jo&Joe Tracking Decorator utility
 
 <!-- toc -->
 
-This standalone javascript library aims at helping webmasters of Accor Hotel Websites to effortlessly
-add parameters required for correct tracking to any link to the Accor booking funnel.
+This standalone javascript library aims to effortlessly add parameters required for correct tracking to any 
+link to the Smart Booking Engine on the Jo&Joe Website.
 
 ## Installation 
 
@@ -16,30 +16,22 @@ The bundle is available in the `dist` folder of this repository.
 ### Stable version
 
 ``` html
-<script async src="http://staticaws.fbwebprogram.com/accor_tracking_decorator/decorator.js"></script>
-```
-
-### Development version
-
-``` html
-<script async src="http://staticaws.fbwebprogram.com/accor_tracking_decorator_dev/decorator.js"></script>
+<script async src="http://staticaws.fbwebprogram.com/joandjoe_tracking_decorator/decorator.js"></script>
 ```
 
 ## Configuration
 
 The script requires a simple configuration, that should be specified as early as possible in your
-`<head>` tag. The script exposes a global variable `_AccorTrackingDecorator` which is used as a 
+`<head>` tag. The script exposes a global variable `_JoAndJoeTrackingDecorator` which is used as a 
 namespace for configuration and methods of the script. Example: 
 
 ``` html
 <!-- Decorator configuration.  This should be included in your head tag ASAP. -->
 <script>
     // Create the variable if it doesn't exist
-    var _AccorTrackingDecorator = _AccorTrackingDecorator || {};
+    var _JoAndJoeTrackingDecorator = _JoAndJoeTrackingDecorator || {};
     
-    _AccorTrackingDecorator.config = {
-        merchantid: 'MS-12345',
-        hotelID: '12345',
+    _JoAndJoeTrackingDecorator.config = {
         handleGoogleAnalytics: true,
         autoDecorate: true
     };
@@ -49,14 +41,8 @@ namespace for configuration and methods of the script. Example:
 ### Configuration flags
 
 ``` javascript
-var _AccorTrackingDecorator = _AccorTrackingDecorator || {};      
-_AccorTrackingDecorator.config = {
-    /* The Hotel ID for the current page. This is not mandatory and is '' by default */
-    hotelID: 'A0123', 
-
-    /* MANDATORY. This is the "Merchant ID" and by convention it should be MS-$HotelID */
-    merchantid: 'MS-A0123',
-
+var _JoAndJoeTrackingDecorator = _JoAndJoeTrackingDecorator || {};      
+_JoAndJoeTrackingDecorator.config = {
     /* Set to true if you want that all link tags in your document are inspected automatically 
        and the tracking parameters added to all the relevant ones. false by default
     */
@@ -67,15 +53,7 @@ _AccorTrackingDecorator.config = {
        false by default 
      */
     handleGoogleAnalytics: true,
-    
-    /* Set to true if the decorator is installed on an Accor Brand Site 
-       (E.G. Official portal for all Sofitel Hotels) 
-    */
-    isBrandSite: false,
-    
-    /* Set to the brand name (example: 'sofitel'). It has effect only if isBrandsite is true  */
-    brandName: '',
-      
+        
     /* Allow the script to log debug messages in console. false by default */
     debug: false,
 
@@ -84,30 +62,46 @@ _AccorTrackingDecorator.config = {
        Only if the hostname of a specific link matches any of the Regular Expressions 
        in this array, it will be decorated with the tracking parameters.        
      */
-    // domainsToDecorate: [/^all\.accor\.com$/, /accorhotels.com$/],
+    // domainsToDecorate: [/secure-hotel-booking\.com$/, /all\.accor\.com$/],
     
-    /* TESTING ONLY Use this parameter only if you need to emulate a specific referrer and test the results. 
-       You can pass the full expected URL of the referrer you intend to test
+    /*
+       Pass a list of parameters to catch from the URL and save in the cookie, to propagate as is to SMART BE
     */
-    // testReferrer: 'http://www.google.co.uk/',
+    
+    //paramsToPropagate: [
+    //     'utm_source',
+    //     'utm_content',
+    //     'utm_term',
+    //     'utm_medium',
+    //     'utm_campaign',
+    //     'utm_sourceid',
+    //     'sourceid',
+    //     'merchantid',
+    //     'sourcid'
+    // ]
 };                                   
 ```
 
-## Parameters added by the decorator
+## Parameters added by default
 
-- `merchantid` The merchant ID as configured
-- `sourceid` Calculated dynamically based on the attribution rules
+
+- utm_source
+- utm_content
+- utm_term
+- utm_medium
+- utm_campaign
+- utm_sourceid
+- sourceid
+- merchantid
+- sourcid
 - `_ga` Google Analytics Linker parameter. Only if `config.handleGoogleAnalytics` is true
 - `gacid` Google Analytics Linker client id. Only if `config.handleGoogleAnalytics` is true
-- `utm_source` will be set to `hotelwebsite_$hotelID` or to `config.brandName` (as configured) if `config.isBrandSite` is true
-- `utm_medium` will be set to `accor_regional_websites` or to `accor_brands_websites` if `config.isBrandSite` is true
-- `utm_campaign`  will be set to `hotel_website_search` or to `brand_website_search` if `config.isBrandSite` is true
 
 Note: in the reference above, `config.***` refers to the decorator configuration values, as seen in the previous section.
 
 ## Public methods
 
-### `_AccorTrackingDecorator.decorateUrl(url, extraParams)`
+### `_JoAndJoeTrackingDecorator.decorateUrl(url, extraParams)`
 
 Adds the tracking parameters to the passed `url` (string). If the `extraParams` object is passed, those parameters
 will be added to the URL too. `extraParams` allows overriding the parameters calculated by the script, too. This is 
@@ -116,12 +110,12 @@ useful if your page has links for multiple hotels.
 **Example:**
 
 ``` javascript
-var origUrl = 'https://all.accor.com/lien_externe.svlt?destination=12345&goto=rech_resa';
-var decorated = _AccorTrackingDecorator.decorateUrl(origURL, {merchantid: 'MS-12345'});
+var origUrl = 'https://www.secure-hotel-booking.com/smart/JO-JOE-Paris-Gentilly/2QKR/en/';
+var decorated = _JoAndJoeTrackingDecorator.decorateUrl(origURL, {merchantid: 'MS-12345'});
 
 /* decorated: 
-https://all.accor.com/lien_externe.svlt?destination=12345&goto=rech_resa
-    &utm_source=hotelwebsite_12345
+https://www.secure-hotel-booking.com/smart/JO-JOE-Paris-Gentilly/2QKR/en/
+    ?utm_source=hotelwebsite_12345
     &utm_campaign=hotel_website_search
     &utm_medium=accor_regional_websites
     &merchantid=MS-12345
@@ -132,7 +126,7 @@ https://all.accor.com/lien_externe.svlt?destination=12345&goto=rech_resa
     
 ```
 
-### `_AccorTrackingDecorator.decorateObject(obj, extraParams)`
+### `_JoAndJoeTrackingDecorator.decorateObject(obj, extraParams)`
 
 Adds the tracking parameters to the passed `obj` (object). If the `extraParams` object is passed, those parameters
 will be added to the object too. `extraParams` allows overriding the parameters calculated by the script, too. This is 
@@ -146,7 +140,7 @@ var origParams = {
     goto: 'rech_resa',
 };
 
-var decorated = _AccorTrackingDecorator.decorateObject(origParams, {merchantid: 'MS-12345'});
+var decorated = _JoAndJoeTrackingDecorator.decorateObject(origParams, {merchantid: 'MS-12345'});
 
 /* decorated: 
 
@@ -165,25 +159,25 @@ var decorated = _AccorTrackingDecorator.decorateObject(origParams, {merchantid: 
 */  
 ```
 
-### `_AccorTrackingDecorator.decorateAll()`
+### `_JoAndJoeTrackingDecorator.decorateAll()`
 
 Adds the tracking parameters to all links on the page ( `<a href="">` ). 
 This can be used if you have `autoDecorate` disabled or if you append new links to the document dynamically.
 
 ## Cookies
 
-This script sets a single cookie `_AccorTrackingDecoratorData` which is used to store the sourceid.
+This script sets a single cookie `_JoAndJoeTrackingDecoratorData` which is used to store the sourceid.
 This cookie can be used to store other arbitrary data if needed:
 
-`_AccorTrackingDecorator.Store.set(key, value)`
+`_JoAndJoeTrackingDecorator.Store.set(key, value)`
 
 and 
 
-`_AccorTrackingDecorator.Store.get(key)`
+`_JoAndJoeTrackingDecorator.Store.get(key)`
 
 To read the sourceid from the cookie: 
 
-`_AccorTrackingDecorator.Store.get('sourceid')`
+`_JoAndJoeTrackingDecorator.Store.get('sourceid')`
 
 ## Browser support
 

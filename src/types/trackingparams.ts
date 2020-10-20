@@ -1,9 +1,14 @@
 export type TrackingParams = {
-    merchantid?: string,
-    _ga?: string|false
-    gacid?: string|false
-    utm_source?: string|false
-    utm_medium?: string|false
-    utm_campaign?: string|false
-    sourceid?: string,
+    utm_source?: string
+    utm_content?: string
+    utm_term?: string
+    utm_medium?: string
+    utm_campaign?: string
+    utm_sourceid?: string
+    sourceid?: string
+    merchantid?: string
+    sourcid?: string
+    gacid?: string | false
+    _ga?: string | false
 }
+export type TrackingParam = keyof TrackingParams;

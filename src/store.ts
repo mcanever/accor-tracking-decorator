@@ -2,7 +2,7 @@ import { logger } from "./logger";
 import { utils } from "./utils";
 
 export class Store {
-    public static cookie_name = '_AccorTrackingDecoratorData';
+    public static cookie_name = '_JoAndJoeTrackingDecoratorData';
     public static cookie_duration = 30;
 
     // Base64 encode to reduce cookie size
@@ -30,7 +30,8 @@ export class Store {
 
     static saveToCookie(val: any): void {
         const encoded = Store.encode(JSON.stringify(val));
-        utils.Cookies.set(Store.cookie_name, encoded, { expires: Store.cookie_duration });
+        const isSSL = location.protocol.toLowerCase() == 'https:';
+        utils.Cookies.set(Store.cookie_name, encoded, { expires: Store.cookie_duration, sameSite: isSSL ? 'None' : 'Lax', secure: isSSL ? true : undefined });
         logger.log('Save to cookie', Store.cookie_name, val);
     }
 

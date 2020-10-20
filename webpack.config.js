@@ -9,18 +9,17 @@ module.exports = function(env) {
     env.mode = env.mode || 'production';
     var webpackMode = 'production';
     var watch = false;
-    var output = 'dist';
+    var output = 'joandjoe-dist';
 
     if (env.mode === 'development') {
         watch = true;
         webpackMode = 'development'
-        output = 'build-dev'
+        output = 'joandjoe-build-dev'
     } else if (env.mode === 'watch') {
         watch = true;
         webpackMode = 'production'
-        output = 'dist'
+        output = 'joandjoe-dist'
     }
-
 
     return {
         entry: './src/init.ts',

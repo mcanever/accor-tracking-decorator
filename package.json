@@ -1,14 +1,13 @@
 {
   "name": "accor-tracking-decorator",
   "version": "0.0.1",
-  "description": "Script to decorate links to Accor Booking funnel with tracking parameters",
+  "description": "Script to decorate links to Smart Booking Engine funnel with tracking parameters, for Jo & Joe",
   "private": true,
   "main": "./dist/decorator.js",
   "scripts": {
     "watch": "npx webpack --env.mode=watch",
     "build": "npx webpack --env.mode=production",
     "build-dev": "npx webpack --env.mode=development",
-    "test": "mocha --bail --exit --require ts-node/register './tests/*.spec.ts'",
     "toc": "node buildToc.js"
   },
   "author": "Matteo Canever <mcanever@d-edge.com>",

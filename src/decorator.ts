@@ -7,18 +7,14 @@ import { utils } from "./utils";
 import { Store } from './store';
 
 export type DecoratorConfig = {
-    merchantid: string,
-    hotelID: string,
     autoDecorate: boolean,
     debug: boolean,
     handleGoogleAnalytics: boolean,
-    testReferrer: string,
     domainsToDecorate: RegExp[],
-    isBrandSite?: boolean,
-    brandName?: string
+    paramsToPropagate: (keyof TrackingParams)[]
 }
 /**
- * Main class to use for decorating any link going to all.accor.com with vital parameters that ensure tracking
+ * Main class to use for decorating any link going to specific domains with vital parameters that ensure tracking
  */
 export class Decorator {
     private namespace: Namespace;
@@ -28,7 +24,7 @@ export class Decorator {
     constructor(namespace: Namespace) {
         this.namespace = namespace;
         this.initConfig();
-        logger.log('AccorTrackingDecorator config', this.config);
+        logger.log('JoAndJoeTrackingDecorator config', this.config);
         this.initParameters();
     }
 
@@ -120,87 +116,51 @@ export class Decorator {
     // Read config from the global variable and set defaults with some smart detection
     private initConfig() {
         this.config = {
-            merchantid: this.namespace.getConfig('merchantid') || '',
-            hotelID: this.namespace.getConfig('hotelID') || '',
             autoDecorate: !!this.namespace.getConfig('autoDecorate'),
             debug: !!this.namespace.getConfig('debug'),
             handleGoogleAnalytics: this.namespace.getConfig('handleGoogleAnalytics') !== false,
-            testReferrer: this.namespace.getConfig('testReferrer') || '',
-            domainsToDecorate: this.namespace.getConfig('domainsToDecorate') || [/^all\.accor\.com$/, /accorhotels.com$/],
-            isBrandSite: this.namespace.getConfig('isBrandSite') || false,
-            brandName: this.namespace.getConfig('brandName') || '',
+            domainsToDecorate: this.namespace.getConfig('domainsToDecorate') || [/secure-hotel-booking\.com$/, /all\.accor\.com$/],
+            paramsToPropagate: this.namespace.getConfig('paramsToPropagate') || [
+                'utm_source',
+                'utm_content',
+                'utm_term',
+                'utm_medium',
+                'utm_campaign',
+                'utm_sourceid',
+                'sourceid',
+                'merchantid',
+                'sourcid'
+            ]
         };
 
         // Configure logger
         logger.enabled = this.config.debug;
-
-        // Force Uppercase to avoid ambiguous hotel IDs
-        this.config.hotelID = this.config.hotelID.toUpperCase();
-
-        // Detect HotelID from config.merchantid
-        if (this.config.hotelID === '' && this.config.merchantid !== '') {
-            const matches = this.config.merchantid.match(/^MS-([A-Z0-9]+)$/);
-            if (matches && matches.length == 2) {
-                this.config.hotelID = matches[1];
-                logger.log('hotelID was empty, deriving it from merchantid: ', this.config.hotelID);
-            }
-        }
-
-        // Build merchantid from HotelID
-        if (this.config.merchantid === '') {
-            logger.log('config.merchantid is empty!');
-            if (this.config.hotelID !== '') {
-                this.config.merchantid = 'MS-' + this.config.hotelID;
-                logger.log('Using hotelID to set merchantid', this.config.merchantid);
-            }
-        }
     }
 
     // Prepare the parameters based on the initial context and configuration
     public initParameters() {
-        if (this.config.isBrandSite) {
-            this.trackingParams = {
-                utm_source: this.config.brandName,
-                utm_campaign: 'brand_website_search',
-                utm_medium: 'accor_brands_websites',
-                merchantid: this.config.merchantid
-            };
-        } else {
-            this.trackingParams = {
-                utm_source: 'hotelwebsite_' + this.config.hotelID,
-                utm_campaign: 'hotel_website_search',
-                utm_medium: 'accor_regional_websites',
-                merchantid: this.config.merchantid
-            };
-        }
+        this.trackingParams = {};
+
         // Detect Google Analytics _ga and gacid parameters
         detectGAParameters((params) =>  {
             if (this.config.handleGoogleAnalytics) {
                 this.trackingParams.gacid = params.gacid;
                 this.trackingParams._ga = params._ga;
             }
-            logger.log('AccorTrackingDecorator params', this.trackingParams);
+            logger.log('JoAndJoeTrackingDecorator params', this.trackingParams);
         }, this.namespace.source);
 
-        const referrer = this.config.testReferrer !== '' ? this.config.testReferrer : document.referrer;
 
         // Save in cookie
-        const referrerData = Attribution.detectAttributonFromReferrer(referrer);
-        referrerData.merchantid = referrerData.merchantid || this.trackingParams.merchantid;
-        const storeData =  {
-            sourceid: Store.get('sourceid'),
-            merchantid: Store.get('merchantid')
-        };
+        Attribution.detectAttributon(this.config.paramsToPropagate);
 
-        logger.log('Are referrer and location equal ?', utils.areReferrerAndLocationEqual(referrer));
-
-        if (Attribution.getScore(referrerData) >= Attribution.getScore(storeData) && !utils.areReferrerAndLocationEqual(referrer) ) {
-            Store.set('sourceid', referrerData.sourceid);
-            Store.set('merchantid', referrerData.merchantid);
-        }
-
-        this.trackingParams.sourceid = Store.get('sourceid');
-        this.trackingParams.merchantid = Store.get('merchantid');
+        const self = this;
+        this.config.paramsToPropagate.forEach(function (param) {
+            const fromCookie = Store.get(param);
+            if (fromCookie !== null && fromCookie !== '') {
+                self.trackingParams[param] = fromCookie;
+            }
+        });
 
         if (!this.config.handleGoogleAnalytics){
             utils.dispatchEvent('accor_tracking_params_available');

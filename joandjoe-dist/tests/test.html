@@ -51,12 +51,8 @@
         <script>
             function testDecorateObject() {
                 var obj={ param: 'value' };
-                // Call the decorator
-                var decorated = _JoAndJoeTrackingDecorator.decorateObject(obj);
-
-                //////
                 var msg = "Before: \r\n" + JSON.stringify(obj, null, 2);
-                msg += "\r\n\r\nAfter: \r\n" + JSON.stringify(decorated, null, 2);
+                msg += "\r\n\r\nAfter: \r\n" + JSON.stringify(_JoAndJoeTrackingDecorator.decorateObject(obj), null, 2);
 
                 alert(msg);
             }

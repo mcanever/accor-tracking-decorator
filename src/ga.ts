@@ -5,16 +5,16 @@ import { utils } from "./utils";
 declare global {
     interface Window {
         ga: any
-        AccorBooking_GUA_ClientId: string|false
-        AccorBooking_GUA_linkerParam: string|false
+        JoAndJoeBooking_GUA_ClientId: string|false
+        JoAndJoeBooking_GUA_linkerParam: string|false
     }
 }
 
 // Ported in typescript-ish from accor-booking/booking.js
 // Detects Google Analytics Client ID and Linker Param
 export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: string|false}) => void, source: any = window): void {
-    source.AccorBooking_GUA_ClientId = false;
-    source.AccorBooking_GUA_linkerParam = false;
+    source.JoAndJoeBooking_GUA_ClientId = false;
+    source.JoAndJoeBooking_GUA_linkerParam = false;
     let cbackParams:{gacid: string|false,  _ga: string|false} = {gacid: false, _ga: false};
     //Wait for ga() to be available and get clientId
     let clientIdInterval = setInterval(function() {
@@ -26,7 +26,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                     clearInterval(clientIdInterval);
                     clientIdInterval = null;
                     let clientId = trackers[0].get('clientId')
-                    source.AccorBooking_GUA_ClientId = clientId;
+                    source.JoAndJoeBooking_GUA_ClientId = clientId;
                     cbackParams.gacid = clientId;
                     logger.log('Detected clientID (gacid): '+clientId);
                     // linkerParam returned from the tracker will look like _ga=1231234.234234.5235
@@ -39,7 +39,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                         const parts = linkerParam.split('=');
                         if (parts.length == 2) {
                             linkerParam = parts[1];
-                            source.AccorBooking_GUA_linkerParam = linkerParam;
+                            source.JoAndJoeBooking_GUA_linkerParam = linkerParam;
                             cbackParams._ga = linkerParam;
                             logger.log('Detected linker param (_ga): ' + linkerParam);
                         }
@@ -50,7 +50,7 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                 cback(cbackParams);
             });
         }
-    }, 50);
+    }, 200);
 
     //Cancel polling after 10 seconds (Google analytics may not be there or never load for some reason)
     //In this case we need to call the callback and dispatch the event anyways in case someone relies on this
