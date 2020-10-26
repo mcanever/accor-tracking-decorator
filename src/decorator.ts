@@ -6,12 +6,19 @@ import { Attribution } from "./attribution";
 import { utils } from "./utils";
 import { Store } from './store';
 
+declare global {
+    interface Window {
+        dataLayer: any
+    }
+}
+
 export type DecoratorConfig = {
-    autoDecorate: boolean,
-    debug: boolean,
-    handleGoogleAnalytics: boolean,
-    domainsToDecorate: RegExp[],
+    autoDecorate: boolean
+    debug: boolean
+    handleGoogleAnalytics: boolean
+    domainsToDecorate: RegExp[]
     paramsToPropagate: (keyof TrackingParams)[]
+    pushVarsToDataLayer: { [paramName:string] : string }
 }
 /**
  * Main class to use for decorating any link going to specific domains with vital parameters that ensure tracking
@@ -130,11 +137,28 @@ export class Decorator {
                 'sourceid',
                 'merchantid',
                 'sourcid'
-            ]
+            ],
+            pushVarsToDataLayer: this.namespace.getConfig('pushVarsToDataLayer') || {
+                merchantid: 'merchantid', // "name of parameter in cookie or URL" : "name of dataLayer variable"
+                sourceid: 'sourceid'
+            }
         };
 
         // Configure logger
         logger.enabled = this.config.debug;
+    }
+
+    private pushToDataLayer() {
+        let dataLayerObj:{ [variableName:string] : string } = {};
+        const decorator = this;
+        Object.keys(this.config.pushVarsToDataLayer).forEach((paramName) => {
+            const dataLayerVarName = this.config.pushVarsToDataLayer[paramName];
+            const dataLayerVarValue = paramName in decorator.trackingParams ? (decorator.trackingParams as any)[paramName] : '';
+            dataLayerObj[dataLayerVarName] = dataLayerVarValue;
+        });
+        logger.log('Pushing to dataLayer', dataLayerObj);
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(dataLayerObj);
     }
 
     // Prepare the parameters based on the initial context and configuration
@@ -160,6 +184,10 @@ export class Decorator {
                 self.trackingParams[param] = fromCookie;
             }
         });
+
+        if (Object.keys(this.config.pushVarsToDataLayer).length > 0){
+            this.pushToDataLayer();
+        }
 
         if (!this.config.handleGoogleAnalytics){
             utils.dispatchEvent('accor_tracking_params_available');

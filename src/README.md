@@ -79,6 +79,22 @@ _JoAndJoeTrackingDecorator.config = {
     //     'merchantid',
     //     'sourcid'
     // ]
+    
+    /*
+       Pass a list of parameters to push to GTM dataLayer as variables, in this format:
+       {
+        "Name of the URL parameter": "Name of the dataLayer variable",
+        ...
+       }
+       
+       Pass an empty object ( {} ) to disable the feature
+       The default value is shown below: 
+    */
+    
+    pushVarsToDataLayer: {
+       'merchantid': 'merchantid',
+       'sourceid': 'sourceid',
+    }
 };                                   
 ```
 
