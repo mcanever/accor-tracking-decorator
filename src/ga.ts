@@ -40,8 +40,6 @@ export function detectGAParameters(cback: (params: {_ga: string|false}) => void,
                         }
                     }
                 }
-                // Dispatch an event to notify that we have the tracking parameters available
-                utils.dispatchEvent('accor_tracking_params_available');
                 cback(cbackParams);
             });
         }

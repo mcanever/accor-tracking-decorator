@@ -3,6 +3,57 @@
 <head>
     <meta charset="UTF-8"/>
 
+    <script>
+        var pageNameFromPhp = 'test1';
+        var icl_vars = {current_language: 'en'};
+
+        /*
+        * Current version:
+        *
+        * if (.. cookie accepted ..) {
+        *
+        *     dataLayer.push({
+        *        pagename: 'corporate::' + pageNameFromPhp,
+        *        pagelanguage: icl_vars.current_language,
+        *        category: 'corporate',
+        *        sub_category_level1: pageNameFromPhp,
+        *        event: 'push_dynamic_datas'
+        *    });
+        * }
+        *
+        * */
+
+        //New version:
+        // if (.. cookie accepted ..) {
+        var sendDataLayerObj = function() {
+            var dataLayerObject =  {
+                pagename: 'corporate::' + pageNameFromPhp,
+                pagelanguage: icl_vars.current_language,
+                category: 'corporate',
+                sub_category_level1: pageNameFromPhp,
+                event: 'push_dynamic_datas'
+            };
+            var trackingVars = _JoAndJoeTrackingDecorator.getDataLayerVars();
+            // Append tracking vars to the original Object
+            for (var key in trackingVars) {
+                if (trackingVars.hasOwnProperty(key)) {
+                    dataLayerObject[key] = trackingVars[key];
+                }
+            }
+            // window.console && console.log('pushing DataLayer Object', dataLayerObject);
+            dataLayer.push(dataLayerObject);
+        };
+        // }
+
+        if (typeof _JoAndJoeTrackingDecorator !== 'undefined'
+            && typeof _JoAndJoeTrackingDecorator.getDataLayerVars !== 'undefined'
+        ) {
+            sendDataLayerObj();
+        } else {
+            document.addEventListener('accor_tracking_params_available', sendDataLayerObj);
+        }
+    </script>
+
     <!-- Decorator library -->
     <script src="../decorator.js" async></script>
 
@@ -27,8 +78,8 @@
                 'sourcid'
             ],
 
-            //This parameter is OPTIONAL!
-            pushVarsToDataLayer: {
+            // This parameter is OPTIONAL!
+            dataLayerVars: {
                  merchantid: 'merchantid',
                  sourceid: 'sourceid',
             }

@@ -91,7 +91,7 @@ _JoAndJoeTrackingDecorator.config = {
        The default value is shown below: 
     */
     
-    pushVarsToDataLayer: {
+    dataLayerVars: {
        'merchantid': 'merchantid',
        'sourceid': 'sourceid',
     }
@@ -176,6 +176,12 @@ var decorated = _JoAndJoeTrackingDecorator.decorateObject(origParams, {merchanti
 
 Adds the tracking parameters to all links on the page ( `<a href="">` ). 
 This can be used if you have `autoDecorate` disabled or if you append new links to the document dynamically.
+
+### `_JoAndJoeTrackingDecorator.getDataLayerVars()`
+
+Returns the dataLayer vars as configured in `config.dataLayerVars`.
+It should be called as a callback of the custom event `accor_tracking_params_available` or as soon as 
+`_JoAndJoeTrackingDecorator` is available if  you don't need the Google Analytics specific parameters in dataLayer vars.
 
 ## Cookies
 

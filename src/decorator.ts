@@ -18,7 +18,7 @@ export type DecoratorConfig = {
     handleGoogleAnalytics: boolean
     domainsToDecorate: RegExp[]
     paramsToPropagate: (keyof TrackingParams)[]
-    pushVarsToDataLayer: { [paramName:string] : string }
+    dataLayerVars: { [paramName:string] : string }
 }
 /**
  * Main class to use for decorating any link going to specific domains with vital parameters that ensure tracking
@@ -27,6 +27,7 @@ export class Decorator {
     private namespace: Namespace;
     public trackingParams: TrackingParams;
     public config: DecoratorConfig;
+    private eventFired: boolean = false;
 
     constructor(namespace: Namespace) {
         this.namespace = namespace;
@@ -138,7 +139,7 @@ export class Decorator {
                 'merchantid',
                 'sourcid'
             ],
-            pushVarsToDataLayer: this.namespace.getConfig('pushVarsToDataLayer') || {
+            dataLayerVars: this.namespace.getConfig('dataLayerVars') || {
                 merchantid: 'merchantid', // "name of parameter in cookie or URL" : "name of dataLayer variable"
                 sourceid: 'sourceid'
             }
@@ -148,17 +149,26 @@ export class Decorator {
         logger.enabled = this.config.debug;
     }
 
-    private pushToDataLayer() {
+    /**
+     * Get vars to push on the dataLayer.
+     * To be called after the event
+     */
+    public getDataLayerVars() {
         let dataLayerObj:{ [variableName:string] : string } = {};
         const decorator = this;
-        Object.keys(this.config.pushVarsToDataLayer).forEach((paramName) => {
-            const dataLayerVarName = this.config.pushVarsToDataLayer[paramName];
-            const dataLayerVarValue = paramName in decorator.trackingParams ? (decorator.trackingParams as any)[paramName] : '';
-            dataLayerObj[dataLayerVarName] = dataLayerVarValue;
+        Object.keys(this.config.dataLayerVars).forEach((paramName) => {
+            const dataLayerVarName = this.config.dataLayerVars[paramName];
+            dataLayerObj[dataLayerVarName] =  paramName in decorator.trackingParams ? (decorator.trackingParams as any)[paramName] : '';
         });
-        logger.log('Pushing to dataLayer', dataLayerObj);
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push(dataLayerObj);
+        return dataLayerObj;
+    }
+
+    public dispatchEvent() {
+        if (this.eventFired) {
+            return;
+        }
+        utils.dispatchEvent('accor_tracking_params_available');
+        this.eventFired = true;
     }
 
     // Prepare the parameters based on the initial context and configuration
@@ -170,6 +180,7 @@ export class Decorator {
             if (this.config.handleGoogleAnalytics) {
                 this.trackingParams._ga = params._ga;
             }
+            this.dispatchEvent();
             logger.log('JoAndJoeTrackingDecorator params', this.trackingParams);
         }, this.namespace.source);
 
@@ -185,12 +196,13 @@ export class Decorator {
             }
         });
 
-        if (Object.keys(this.config.pushVarsToDataLayer).length > 0){
-            this.pushToDataLayer();
+        if (!this.config.handleGoogleAnalytics){
+                this.dispatchEvent();
         }
 
-        if (!this.config.handleGoogleAnalytics){
-            utils.dispatchEvent('accor_tracking_params_available');
-        }
+        const decorator = this;
+        document.addEventListener('ready', function () {
+            decorator.dispatchEvent();
+        });
     }
 }

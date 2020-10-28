@@ -14,6 +14,8 @@ namespace.set('decorateUrl', (...args: any) => decorator.decorateURL(...args));
 namespace.set('decorateObject', (...args: any[]) => decorator.decorateObject(...args));
 // @ts-ignore
 namespace.set('decorateAll', (...args: any[]) => decorator.decorateAll(...args));
+// @ts-ignore
+namespace.set('getDataLayerVars', (...args: any[]) => decorator.getDataLayerVars(...args));
 
 namespace.set('decorator', decorator);
 namespace.set('Store', Store);
