@@ -26,6 +26,22 @@ describe('Attribution', () => {
            expect(Attribution.getScore({sourceid: 'ml-test', merchantid: 'dis-hello'})).eq(3);
            expect(Attribution.getScore({sourceid: 'ml-test', merchantid: 'sop-meow'})).eq(3);
        });
+       it('should return 3 if merchant ID is one of the retargeting values', () => {
+           const values = [
+               'RT-FR018143',
+               'RT-MD054836',
+               'RT-FR018149',
+               'RT-FR018150',
+               'RT-PC026193',
+               'RT-MD115538'
+           ];
+           for (let val of values) {
+               // Always followed at least by a "-"
+               expect(Attribution.getScore({ sourceid: 'source', merchantid: val })).not.eq(3);
+               expect(Attribution.getScore({ sourceid: 'source', merchantid: val + '-'})).eq(3);
+               expect(Attribution.getScore({ sourceid: 'cource', merchantid: val + '-123'})).eq(3);
+           }
+       });
     });
     describe('detectReferrer', () => {
         // TODO: Add many more urls based on more research

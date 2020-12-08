@@ -194,7 +194,15 @@ export class Decorator {
 
         logger.log('Are referrer and location equal ?', utils.areReferrerAndLocationEqual(referrer));
 
-        if (Attribution.getScore(referrerData) >= Attribution.getScore(storeData) && !utils.areReferrerAndLocationEqual(referrer) ) {
+        const referrerAttributionScore = Attribution.getScore(referrerData);
+        const storedAttributionScore = Attribution.getScore(storeData);
+
+        logger.log('Attribution data detected from current URL, Referrer and configuration = ', referrerData);
+        logger.log('Stored Attribution data (from previous visits if any) = ', storeData);
+        logger.log('---------------------------------------------------------------------------------------');
+        logger.log('Attribution score of current URL/referrer = ', referrerAttributionScore, 'Attribution Score of stored data = ', storedAttributionScore);
+
+        if ( referrerAttributionScore >= storedAttributionScore && !utils.areReferrerAndLocationEqual(referrer) ) {
             Store.set('sourceid', referrerData.sourceid);
             Store.set('merchantid', referrerData.merchantid);
         }

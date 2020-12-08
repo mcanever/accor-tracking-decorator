@@ -6,9 +6,9 @@ export class Attribution {
         const hasBoth = !!data.sourceid && !! data.merchantid;
 
         // Code style of the following conditions is purposely not concise to improve readability
-
-        // If sourceid and merchantid are both present and merchantid starts with ppc-, dis- or sop- , score is 3
-        if (hasBoth && /^(ppc-|dis-|sop-)/.test(data.merchantid) ) {
+        // If sourceid and merchantid are both present and merchantid starts with ppc-, dis- or sop- ,
+        // or one of the specific Retargeting MerchantIDs, the score is 3
+        if (hasBoth && (/^(ppc-|dis-|sop-)/.test(data.merchantid) || this.isRetargetingMerchant(data.merchantid))) {
             return 3;
         }
         // If sourceid and merchantid are both present or sourceid starts with ml- , score is 2
@@ -121,6 +121,25 @@ export class Attribution {
 
         // If we get here we didn't find a matching referrer
         return null;
+    }
+
+    public static isRetargetingMerchant(merchantId: string):boolean {
+        // Récap clés et Xtor Strategic Accounts 07-12-2020
+        const regexps:RegExp[] = [
+            /^RT-FR018143-.*$/,
+            /^RT-MD054836-.*$/,
+            /^RT-FR018149-.*$/,
+            /^RT-FR018150-.*$/,
+            /^RT-PC026193-.*$/,
+            /^RT-MD115538-.*$/
+        ];
+
+        for (let regex of regexps) {
+            if (regex.test(merchantId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static getOrigin(): string {
