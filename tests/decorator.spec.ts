@@ -107,6 +107,19 @@ describe('Decorator', () => {
         utm_source: 'hotelwebsite_HOTELID',
       });
     });
+
+    it('should not add utm parameters when isBrandSite is true', () => {
+      nsSource._AccorTrackingDecorator.config.isBrandSite = true;
+      const d = new Decorator(namespace);
+      const oibj = {};
+      expect(d.decorateObject(oibj)).deep.eq(oibj);
+      expect(oibj).to.deep.eq({
+        merchantid: 'MS-HOTELID',
+        sourceid: 'Direct_Access'
+      });
+    });
+
+
     it('should allow override through extraParams', () => {
       const d = new Decorator(namespace);
       const oibj = {};

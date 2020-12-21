@@ -91,11 +91,14 @@ _AccorTrackingDecorator.config = {
     */
     isBrandSite: false,
     
-    /* Set to the brand name (example: 'sofitel'). It has effect only if isBrandsite is true  */
+    /* Set to the brand name (example: 'sofitel'). Always specify if hotel is part of a brand  */
     brandName: '',
       
     /* Allow the script to log debug messages in console. false by default */
     debug: false,
+    
+    /* Disable logging success messages in console. false by default */
+    dontLogSuccessMessages: false
 
     /* Use this parameter to specify which domain names are affected by the automamatic 
        decorator (see autoDecorate above.) It should be an array of Regular Exprexsions.
@@ -117,9 +120,9 @@ _AccorTrackingDecorator.config = {
 - `sourceid` Calculated dynamically based on the attribution rules
 - `_ga` Google Analytics Linker parameter. Only if `config.handleGoogleAnalytics` is true
 - `gacid` Google Analytics Linker client id. Only if `config.handleGoogleAnalytics` is true
-- `utm_source` will be set to `hotelwebsite_$hotelID` or to `config.brandName` (as configured) if `config.isBrandSite` is true
-- `utm_medium` will be set to `accor_regional_websites` or to `accor_brands_websites` if `config.isBrandSite` is true
-- `utm_campaign`  will be set to `hotel_website_search` or to `brand_website_search` if `config.isBrandSite` is true
+- `utm_source` will be set to `hotelwebsite_$hotelID` if `config.isBrandSite` is false
+- `utm_medium` will be set to `accor_regional_websites` if `config.isBrandSite` is false
+- `utm_campaign`  will be set to `hotel_website_search` if `config.isBrandSite` is false
 
 Note: in the reference above, `config.***` refers to the decorator configuration values, as seen in the previous section.
 

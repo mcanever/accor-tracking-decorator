@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+const initialDateObj: Date = new Date();
 
 export const utils = {
     getUrlVars: (url: string) => {
@@ -80,5 +81,9 @@ export const utils = {
         } catch (invalid_url_error) {
             return false;
         }
+    },
+    getElapsedMS: (): number => {
+        const now = new Date();
+        return now.getTime() - initialDateObj.getTime();
     }
 };

@@ -15,7 +15,8 @@ export type DecoratorConfig = {
     testReferrer: string,
     domainsToDecorate: RegExp[],
     isBrandSite?: boolean,
-    brandName?: string
+    brandName?: string,
+    dontLogSuccessMessages?: boolean
 }
 /**
  * Main class to use for decorating any link going to all.accor.com with vital parameters that ensure tracking
@@ -99,6 +100,7 @@ export class Decorator {
     public decorateAll() {
         logger.log('decorateAll');
         const allLinks = document.getElementsByTagName('a');
+        let decoratedCount = 0;
         for (let i = 0; i < allLinks.length; i++) {
             const a = allLinks[i];
             const href = a.getAttribute('href');
@@ -111,8 +113,12 @@ export class Decorator {
                     const newHref = this.decorateURL(href);
                     logger.log('Autodecorate', href, newHref);
                     a.setAttribute('href', newHref);
+                    decoratedCount++;
                 }
             }
+        }
+        if (decoratedCount > 0) {
+            logger.success('Successfully decorated ' + decoratedCount + ' links with parameters', this.trackingParams);
         }
     }
 
@@ -129,10 +135,12 @@ export class Decorator {
             domainsToDecorate: this.namespace.getConfig('domainsToDecorate') || [/^all\.accor\.com$/, /accorhotels.com$/],
             isBrandSite: this.namespace.getConfig('isBrandSite') || false,
             brandName: this.namespace.getConfig('brandName') || '',
+            dontLogSuccessMessages: !!this.namespace.getConfig('dontLogSuccessMessages')
         };
 
         // Configure logger
-        logger.enabled = this.config.debug;
+        logger.debug = this.config.debug;
+        logger.logSuccessMessages = !this.config.dontLogSuccessMessages;
 
         // Force Uppercase to avoid ambiguous hotel IDs
         this.config.hotelID = this.config.hotelID.toUpperCase();
@@ -160,9 +168,6 @@ export class Decorator {
     public initParameters() {
         if (this.config.isBrandSite) {
             this.trackingParams = {
-                utm_source: this.config.brandName,
-                utm_campaign: 'brand_website_search',
-                utm_medium: 'accor_brands_websites',
                 merchantid: this.config.merchantid
             };
         } else {
@@ -174,13 +179,14 @@ export class Decorator {
             };
         }
         // Detect Google Analytics _ga and gacid parameters
-        detectGAParameters((params) =>  {
-            if (this.config.handleGoogleAnalytics) {
+        if (this.config.handleGoogleAnalytics) {
+            detectGAParameters((params) =>  {
                 this.trackingParams.gacid = params.gacid;
                 this.trackingParams._ga = params._ga;
-            }
-            logger.log('AccorTrackingDecorator params', this.trackingParams);
-        }, this.namespace.source);
+            }, this.namespace.source);
+        } else {
+            setTimeout(() => utils.dispatchEvent('accor_tracking_params_available'), 150);
+        }
 
         const referrer = this.config.testReferrer !== '' ? this.config.testReferrer : document.referrer;
 
@@ -199,12 +205,12 @@ export class Decorator {
 
         logger.log('Attribution data detected from current URL, Referrer and configuration = ', referrerData);
         logger.log('Stored Attribution data (from previous visits if any) = ', storeData);
-        logger.log('---------------------------------------------------------------------------------------');
         logger.log('Attribution score of current URL/referrer = ', referrerAttributionScore, 'Attribution Score of stored data = ', storedAttributionScore);
 
         if ( referrerAttributionScore >= storedAttributionScore && !utils.areReferrerAndLocationEqual(referrer) ) {
             Store.set('sourceid', referrerData.sourceid);
             Store.set('merchantid', referrerData.merchantid);
+            logger.success('New sourceid and/or merchantid', referrerData.sourceid, referrerData.merchantid);
         }
 
         this.trackingParams.sourceid = Store.get('sourceid');

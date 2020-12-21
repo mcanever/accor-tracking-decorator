@@ -3,10 +3,17 @@
  */
 
 export default class Logger {
-    public enabled = false;
+    public debug = false;
+    public logSuccessMessages = true;
 
     public log(...args: any[]) {
-        if (this.enabled) {
+        if (this.debug && console && console.log) {
+            console.log.apply(this, args);
+        }
+    }
+
+    public success(...args: any[]) {
+        if (this.logSuccessMessages && console && console.log) {
             console.log.apply(this, args);
         }
     }
