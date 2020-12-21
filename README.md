@@ -34,13 +34,13 @@ The bundle is available in the `dist` folder of this repository.
 ### Stable version
 
 ``` html
-<script async src="http://staticaws.fbwebprogram.com/accor_tracking_decorator/decorator.js"></script>
+<script async src="//staticaws.fbwebprogram.com/accor_tracking_decorator/decorator.js"></script>
 ```
 
 ### Development version
 
 ``` html
-<script async src="http://staticaws.fbwebprogram.com/accor_tracking_decorator_dev/decorator.js"></script>
+<script async src="//staticaws.fbwebprogram.com/accor_tracking_decorator_dev/decorator.js"></script>
 ```
 
 ## Configuration
@@ -193,7 +193,7 @@ This can be used if you have `autoDecorate` disabled or if you append new links 
 
 ## Cookies
 
-This script sets a single cookie `_AccorTrackingDecoratorData` which is used to store the sourceid.
+This script sets a single cookie `_AccorTrackingDecoratorData` which is used to store the attribution data (sourceid and merchantid).
 This cookie can be used to store other arbitrary data if needed:
 
 `_AccorTrackingDecorator.Store.set(key, value)`
