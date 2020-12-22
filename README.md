@@ -107,6 +107,21 @@ _AccorTrackingDecorator.config = {
      */
     // domainsToDecorate: [/^all\.accor\.com$/, /accorhotels.com$/],
     
+    /* OPTIONAL!
+       specify this callback if you want to further modify each link / object before it is returned by the
+       decorator functions.
+       The function must have this signature: 
+       ( object ) => object 
+       and should always return the modified original object.
+       The example below will add the parameter web_agency with value d-edge to all decorated links/objects.
+    */
+    postDecorateCallback: function (params) {
+        if (typeof params == 'object') {
+            params.web_agency = 'd-edge';
+        }
+        return params;
+    }
+    
     /* TESTING ONLY Use this parameter only if you need to emulate a specific referrer and test the results. 
        You can pass the full expected URL of the referrer you intend to test
     */

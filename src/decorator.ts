@@ -16,7 +16,8 @@ export type DecoratorConfig = {
     domainsToDecorate: RegExp[],
     isBrandSite?: boolean,
     brandName?: string,
-    dontLogSuccessMessages?: boolean
+    dontLogSuccessMessages?: boolean,
+    postDecorateCallback?: (obj: any) => any
 }
 /**
  * Main class to use for decorating any link going to all.accor.com with vital parameters that ensure tracking
@@ -79,7 +80,7 @@ export class Decorator {
             }
         }
 
-        return obj;
+        return this.config.postDecorateCallback(obj);
     }
 
     public autoDecorate() {
@@ -118,13 +119,14 @@ export class Decorator {
             }
         }
         if (decoratedCount > 0) {
-            logger.success('Successfully decorated ' + decoratedCount + ' links with parameters', this.trackingParams);
+            logger.success('Successfully decorated ' + decoratedCount + ' links with parameters', this.decorateObject({}));
         }
     }
 
 
     // Read config from the global variable and set defaults with some smart detection
     private initConfig() {
+        const postDecorateCallback = this.namespace.getConfig('postDecorateCallback') as ( obj: any ) => any;
         this.config = {
             merchantid: this.namespace.getConfig('merchantid') || '',
             hotelID: this.namespace.getConfig('hotelID') || '',
@@ -135,7 +137,8 @@ export class Decorator {
             domainsToDecorate: this.namespace.getConfig('domainsToDecorate') || [/^all\.accor\.com$/, /accorhotels.com$/],
             isBrandSite: this.namespace.getConfig('isBrandSite') || false,
             brandName: this.namespace.getConfig('brandName') || '',
-            dontLogSuccessMessages: !!this.namespace.getConfig('dontLogSuccessMessages')
+            dontLogSuccessMessages: !!this.namespace.getConfig('dontLogSuccessMessages'),
+            postDecorateCallback: typeof postDecorateCallback === 'function' ? postDecorateCallback : ( obj: any ) => obj
         };
 
         // Configure logger

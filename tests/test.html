@@ -17,6 +17,12 @@
             handleGoogleAnalytics: true,
             isBrandSite: true,
             brandName: 'mantis',
+            postDecorateCallback: function (params) {
+                if (typeof params == 'object') {
+                    params.partner_id = 'grandmercure';
+                }
+                return params;
+            }
             // testReferrer: 'https://www.google.co.uk/asd/s.html?Sdf#123'
         };
     </script>
