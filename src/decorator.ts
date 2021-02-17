@@ -131,7 +131,7 @@ export class Decorator {
             merchantid: this.namespace.getConfig('merchantid') || '',
             hotelID: this.namespace.getConfig('hotelID') || '',
             autoDecorate: !!this.namespace.getConfig('autoDecorate'),
-            debug: !!this.namespace.getConfig('debug'),
+            debug: !!this.namespace.getConfig('debug') || (location.href.indexOf('forceAccorTrackingDecoratorDebug') !== -1),
             handleGoogleAnalytics: this.namespace.getConfig('handleGoogleAnalytics') !== false,
             testReferrer: this.namespace.getConfig('testReferrer') || '',
             domainsToDecorate: this.namespace.getConfig('domainsToDecorate') || [/^all\.accor\.com$/, /accorhotels.com$/],
@@ -144,6 +144,7 @@ export class Decorator {
         // Configure logger
         logger.debug = this.config.debug;
         logger.logSuccessMessages = !this.config.dontLogSuccessMessages;
+        this.namespace.set('logger', logger);
 
         // Force Uppercase to avoid ambiguous hotel IDs
         this.config.hotelID = this.config.hotelID.toUpperCase();
