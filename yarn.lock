@@ -992,6 +992,13 @@ dir-glob@^2.0.0:
   dependencies:
     path-type "^3.0.0"
 
+doc-ready@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/doc-ready/-/doc-ready-1.0.4.tgz#37f5391969cff994303fdfef2e5d50357f8164d3"
+  integrity sha1-N/U5GWnP+ZQwP9/vLl1QNX+BZNM=
+  dependencies:
+    eventie "^1"
+
 domain-browser@^1.1.1:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/domain-browser/-/domain-browser-1.2.0.tgz#3d31f50191a6749dd1375a7f522e823d42e54eda"
@@ -1122,6 +1129,11 @@ estraverse@^4.1.0, estraverse@^4.1.1:
   version "4.3.0"
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-4.3.0.tgz#398ad3f3c5a24948be7725e83d11a7de28cdbd1d"
   integrity sha512-39nnKffWz8xN1BU/2c79n9nB9HDzo0niYUqx6xyqUnyoAnQyyWpOTdZEeiCch8BBu515t4wp9ZmgVfVhn9EBpw==
+
+eventie@^1:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/eventie/-/eventie-1.0.6.tgz#d4ffc8b0c2b5e493c2aa1b22cbe918d3aee74437"
+  integrity sha1-1P/IsMK15JPCqhsiy+kY067nRDc=
 
 events@^3.0.0:
   version "3.1.0"
