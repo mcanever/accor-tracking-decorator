@@ -1,6 +1,8 @@
 dist
 !dist/decorator.js
 !dist/decorator.js.map
+!dist/ga4crossdomain.js
+!dist/ga4crossdomain.js.map
 node_modules
 .idea
 .DS_Store

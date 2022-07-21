@@ -100,6 +100,7 @@ export class GA4CrossDomain {
 
     detectGA4CrossDomainParam(cback: (_gl: string|false) => void, source: any = window): void {
         this._gl = false;
+        (source as any)[this.globalVariableName] = false;
         this.cookieCount = 0;
 
         //Wait for google_tag_data to be available and use the glBridge to generate our value
@@ -142,14 +143,14 @@ export class GA4CrossDomain {
         searchForGa4DecoratorParam();
         let ga4Interval = setInterval(searchForGa4DecoratorParam, 150);
 
-        const eventToDispatch = this.onUpdateEventName;
+        const that = this;
         //Give up after 10 minutes
         setTimeout(function() {
             if (ga4Interval !== null) {
                 logger.log('giving up GA4 params detection, HEADS UP! You may need to make sure there is analytics.js loaded on the page');
                 clearInterval(ga4Interval);
-                dispatchEvent(eventToDispatch);
-                cback(typeof source._GA4CrossDomainParam === 'undefined' ? false : source._GA4CrossDomainParam);
+                dispatchEvent(that.onUpdateEventName);
+                cback(that._gl);
             }
         }, 600000);
     }
