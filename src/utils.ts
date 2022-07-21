@@ -1,4 +1,5 @@
 import Cookies from 'js-cookie';
+import {dispatchEvent} from "./dom";
 const initialDateObj: Date = new Date();
 
 export const utils = {
@@ -50,6 +51,7 @@ export const utils = {
         l.href = href;
         return l;
     },
+    dispatchEvent: dispatchEvent,
     onDomReady: (callback: () => void) => {
         if (document.readyState != "loading") {
             callback();
@@ -57,17 +59,6 @@ export const utils = {
         else {
             document.addEventListener("DOMContentLoaded", callback);
         }
-    },
-    dispatchEvent: (type: string, target?: any) => {
-        target = target || document;
-        let event: any;
-        if(typeof(Event) === 'function') {
-            event = new Event(type);
-        } else {
-            event = document.createEvent('Event');
-            event.initEvent(type, true, true);
-        }
-        target.dispatchEvent(event);
     },
     areReferrerAndLocationEqual: (referrer: string): boolean => {
         // We aren't using new URL() because of browser compatibility

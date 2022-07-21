@@ -4,7 +4,8 @@
     <meta charset="UTF-8"/>
 
     <!-- Decorator library -->
-    <script src="../decorator.js" async></script>
+    <script src="./decorator.js" async></script>
+    <script src="./ga4crossdomain.js" async></script>
 
     <!-- Decorator configuration -->
     <script>
@@ -27,30 +28,91 @@
         };
     </script>
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-70971972-1"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag() {dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'UA-70971972-1');
+
+    <script type="text/javascript" no-loader>
+        var dataLayer =
+            [{
+                "hotel_id": "6541",
+                "hotel_name": "Sofitel Dubai The Palm",
+                "hotel_city": "Dubai",
+                "hotel_country": "United Arab Emirates",
+                "hotel_brand": "sofitel",
+                "gua_id": "UA-73084925-48",
+                "gua_id_hotel": "UA-49671461-1",
+                "gua_id_extra": "",
+                "gua_id_sofitel": "UA-73084925-48",
+                "gua_id_hotel_sofitel": "UA-49671461-1",
+                "gua_id_extra_sofitel": "",
+                "ga4_id": "G-W7XNE5CS81",
+                "ga4_id_hotel": "G-DBY4YT0XKS",
+                "ga4_id_extra": "",
+                "ga4_id_sofitel": "G-W7XNE5CS81",
+                "ga4_id_hotel_sofitel": "G-DBY4YT0XKS",
+                "ga4_id_extra_sofitel": "",
+                "site_domain": "www.sofitel-dubai-thepalm.com",
+                "site_url": "https:\/\/www.sofitel-dubai-thepalm.com",
+                "page_language": "en",
+                "device_type": "desktop",
+                "page_type": "home",
+                "sojern_pixel_id": "NONE"
+            }];
+    </script>
+    <script no-loader>
+        AccorTagManagersAreLoaded = false;
+        AccorTagManagers = [];
+        AccorTagManagers.push(function () {
+            (function (w, d, s, l, i) {
+                w[l] = w[l] || [];
+                w[l].push({'gtm.start': new Date().getTime(), event: 'gtm.js'});
+                var f = d.getElementsByTagName(s)[0], j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+                j.async = true;
+                j.src = '//www.googletagmanager.com/gtm.js?id=' + i + dl;
+                f.parentNode.insertBefore(j, f);
+            })(window, document, 'script', "dataLayer", "GTM-TVWPC8");
+        });
+
+        function loadAllTagManagers() {
+            if (AccorTagManagersAreLoaded) {
+                return;
+            }
+            AccorTagManagersAreLoaded = true;
+            if (window.console && console.log) {
+                console.log("Loading GTM");
+            }
+            for (var i = 0; i < AccorTagManagers.length; i++) {
+                AccorTagManagers[i]();
+            }
+        }
+        setTimeout(function () {
+            loadAllTagManagers();
+        }, 100);
     </script>
     <style>
-        html, body {font-family: Arial, Helvetica, sans-serif; color: #333;}
-        main {width: 90%; max-width: 1200px; margin: 50px auto;}
+        html, body {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #333;
+        }
+
+        main {
+            width: 90%;
+            max-width: 1200px;
+            margin: 50px auto;
+        }
     </style>
 </head>
 <body>
-    <main>
-        <h1>AccorTrackingDecorator test</h1>
-        <p>
-            Autodecorated links
-        </p>
-        <ul>
-            <li><a target="_blank" href="https://all.accor.com/lien_externe.svlt?destination=3537&goto=rech_resa&merchantid=ThisWillBeOverWritten">all.accor.com, merchantid will be Overwritten</a></li>
-            <li><a target="_blank" href="https://all.accor.com#Hash">Hash test</a></li>
-        </ul>
+<main>
+    <h1>AccorTrackingDecorator test</h1>
+    <p>
+        Autodecorated links
+    </p>
+    <ul>
+        <li><a target="_blank"
+               href="https://all.accor.com/lien_externe.svlt?destination=3537&goto=rech_resa&merchantid=ThisWillBeOverWritten">all.accor.com,
+            merchantid will be Overwritten</a></li>
+        <li><a target="_blank" href="https://all.accor.com#Hash">Hash test</a></li>
+    </ul>
 
-    </main>
+</main>
 </body>
 </html>

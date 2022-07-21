@@ -5,6 +5,7 @@ import { TrackingParams } from './types/trackingparams';
 import { Attribution } from "./attribution";
 import { utils } from "./utils";
 import { Store } from './store';
+import {GA4CrossDomain} from "./ga4";
 
 export type DecoratorConfig = {
     merchantid: string,
@@ -85,6 +86,7 @@ export class Decorator {
 
     public autoDecorate() {
         let fired = false;
+        let firedGa4 = false;
         const cback = () => {
             if (fired) {
                 return;
@@ -92,7 +94,16 @@ export class Decorator {
             fired = true;
             setTimeout(() => this.decorateAll(), 300);
         };
+        const cbackGa4 = () => {
+            if (firedGa4) {
+                return;
+            }
+            firedGa4 = true;
+            setTimeout(() => this.decorateAll(), 300);
+        };
+
         document.addEventListener('accor_tracking_params_available', cback);
+        document.addEventListener('accor_ga4_param_updated', cbackGa4);
     }
 
     /**
@@ -188,6 +199,14 @@ export class Decorator {
                 this.trackingParams.gacid = params.gacid;
                 this.trackingParams._ga = params._ga;
             }, this.namespace.source);
+            const GA4 = new GA4CrossDomain();
+            GA4.detectGA4CrossDomainParam((_gl) => {
+                logger.log('[GA4] Updated _gl', _gl);
+                this.trackingParams._gl = _gl;
+            });
+            document.addEventListener('accor_ga4_param_updated', (e:CustomEvent) => {
+                this.trackingParams._gl = e.detail;
+            });
         } else {
             setTimeout(() => utils.dispatchEvent('accor_tracking_params_available'), 150);
         }

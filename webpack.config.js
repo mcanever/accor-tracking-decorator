@@ -23,7 +23,10 @@ module.exports = function(env) {
 
 
     return {
-        entry: './src/init.ts',
+        entry: {
+            decorator: './src/init.ts',
+            ga4crossdomain: './src/ga4standalone.ts',
+        },
         mode: webpackMode,
         watch: watch,
         devtool: webpackMode === 'development'? 'source-map': false,
@@ -48,7 +51,7 @@ module.exports = function(env) {
             extensions: [ '.ts', '.js' ],
         },
         output: {
-            filename: 'decorator.js',
+            filename: '[name].js',
             path: path.resolve(__dirname, output),
             pathinfo: false,
         },
@@ -58,8 +61,8 @@ module.exports = function(env) {
             }),
             new CopyWebpackPlugin([
                 {
-                    from: 'tests/*.html',
-                    to: ''
+                    from: './tests/test.html',
+                    to: './'
                 }
             ]),
         ],
