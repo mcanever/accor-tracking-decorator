@@ -1,5 +1,6 @@
 import { logger } from "./logger";
-import { dispatchEvent } from "./dom";
+import { dispatchEvent, getUrlVars, parseUrlParts } from "./dom";
+
 
 declare global {
     interface Window {
@@ -8,6 +9,7 @@ declare global {
 }
 
 type SingleGACookie = {
+    version: number,
     rawValue: string
     name: string
     clientID: string
@@ -16,30 +18,32 @@ type SingleGACookie = {
 export class GA4CrossDomain {
     public _gl: string | false = false;
     public cookieCount = 0;
+    public postDecorateCallback: (obj: any) => any;
 
     constructor(public globalVariableName = '_GA4CrossDomainParam', public onUpdateEventName = 'accor_ga4_param_updated') {
-
+        this.postDecorateCallback = (obj) => obj;
     }
 
-    public extractClientID(name:string, rawValue: string):string {
+    public getCookieVersionAndClientID(name:string, rawValue: string): { version: number,  clientID: string} {
         // GUA cookies seems to look like GA1.X.$CLIENTID where X is a digit (but let's assume there can be more)
         const ga3RE = /^GA1\.\d+\.(.+)$/;
         const ga4RE = /^GS1\.\d+\.(.+)$/;
         if (ga3RE.test(rawValue)) {
             const matches = ga3RE.exec(rawValue);
-            return matches[1];
+            return { version: 3, clientID: matches[1] };
         } else if (ga4RE.test(rawValue)) {
             const matches = ga4RE.exec(rawValue);
-            return matches[1];
+            return { version: 4, clientID: matches[1] };
         } else {
             logger.log(`Warning: the value for the cookie ${name} does not match GA3 or GA4 format`, rawValue);
-            return rawValue;
+            return { version: -1, clientID: rawValue };
         }
     }
 
     public getGACookies():SingleGACookie[] {
         const allCookies:SingleGACookie[] = [];
         const cleanCookies:SingleGACookie[] = [];
+        let atLeastOneGA4 = false;
         // Iterate all cookies in this domain
         const pairs = document.cookie.split('; ');
         for (let pair of pairs) {
@@ -49,8 +53,16 @@ export class GA4CrossDomain {
             // Google Analytics cookies start with '_ga'.
             // This is a wild assumption but well, we don't want to configure a list manually. XD
             if (/(^_ga$)|^_ga_/.test(name)) {
-                allCookies.push({ name, rawValue, clientID: this.extractClientID(name, rawValue)});
+                const info = this.getCookieVersionAndClientID(name, rawValue);
+                atLeastOneGA4 = atLeastOneGA4 || info.version == 4;
+                if (info.version >= 3) {
+                    allCookies.push({ name, rawValue, clientID: info.clientID, version: info.version});
+                }
             }
+        }
+
+        if (!atLeastOneGA4) {
+            return [];
         }
 
         // Deduplicate based on the client ID, with a matrix
@@ -153,5 +165,54 @@ export class GA4CrossDomain {
                 cback(that._gl);
             }
         }, 600000);
+    }
+
+    /**
+     * Adds the GA4 linker param to the query string of the URL passed as first parameter.
+     * Existing values will be overwritten, always.
+     *
+     * @param url (string) The URL to decorate
+     * @param extraParams (boolean, default = false) additional params to inject
+     */
+    public decorateURL(url: string, extraParams: {[key : string]: string} = {}): string {
+        const u = parseUrlParts(url);
+        if (!u.hostname || u.hostname === '') {
+            return url;
+        }
+        let params = getUrlVars(url);
+        params = this.decorateObject(params, extraParams);
+        const searchChunks: string[] = [];
+        for (let key in params) {
+            if (params.hasOwnProperty(key) && params[key] !== false && params[key] !== null && typeof params[key] == 'string') {
+                searchChunks.push(encodeURIComponent(key)+'='+encodeURIComponent(params[key]));
+            }
+        }
+        if (searchChunks.length > 0) {
+            const path = /^\//.test(u.pathname) ? u.pathname : '/' + u.pathname;
+            url = u.protocol + '//' + u.hostname + path + '?' + searchChunks.join('&') + (u.hash || '');
+        }
+
+        return url;
+    }
+
+    /**
+     * Adds GA4 linker param to the object passed as first argument.
+     * Existing values will be overwritten, always.
+     *
+     * @param obj (string) The Query String parameters, as a javascript object, to decorate
+     * @param extraParams (boolean, default = false) additional params to inject
+     */
+    public decorateObject(obj: {[key: string]: string}, extraParams: {[key : string]: string} = {}): object {
+        if (typeof obj !== 'object' || obj === null) {
+            return obj;
+        }
+        const curParams = {_gl: this._gl, ...extraParams};
+        for (let key in curParams) {
+            if (curParams.hasOwnProperty(key)) {
+                obj[key] = (curParams as any)[key];
+            }
+        }
+
+        return typeof this.postDecorateCallback === 'function' ? this.postDecorateCallback(obj) : obj;
     }
 }

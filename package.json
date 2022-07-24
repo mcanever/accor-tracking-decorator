@@ -8,7 +8,7 @@
     "watch": "npx webpack --env.mode=watch",
     "build": "npx webpack --env.mode=production",
     "build-dev": "npx webpack --env.mode=development",
-    "test": "mocha --bail --exit --require ts-node/register './tests/*.spec.ts'",
+    "test": "mocha --bail --exit -r jsdom-global/register --require ts-node/register './tests/*.spec.ts'",
     "toc": "node buildToc.js"
   },
   "author": "Matteo Canever <mcanever@d-edge.com>",
@@ -21,6 +21,8 @@
     "@types/sinon": "^7.5.1",
     "chai": "^4.2.0",
     "copy-webpack-plugin": "^5.1.1",
+    "jsdom": "^20.0.0",
+    "jsdom-global": "^3.0.2",
     "markdown-toc": "^1.2.0",
     "mocha": "^7.0.1",
     "sinon": "^9.0.0",

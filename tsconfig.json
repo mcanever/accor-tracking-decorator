@@ -6,6 +6,10 @@
     "target": "es5",
     "esModuleInterop": true,
     "jsx": "react",
-    "types": [ "mocha", "chai" ]
-  }
+    "types": [ "mocha", "chai" ],
+    "lib": [
+      "es2016",
+      "dom"
+    ]
+  },
 }

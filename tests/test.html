@@ -2,9 +2,14 @@
 <html>
 <head>
     <meta charset="UTF-8"/>
-
+    <script>
+        _GA4CrossDomain_Debug = true;
+         function _GA4CrossDomain_ReadyCallback(_gl) {
+            console.log('_GA4CrossDomain_ReadyCallback', _gl);
+         }
+    </script>
     <!-- Decorator library -->
-    <script src="./decorator.js" async></script>
+<!--    <script src="./decorator.js" async></script>-->
     <script src="./ga4crossdomain.js" async></script>
 
     <!-- Decorator configuration -->
