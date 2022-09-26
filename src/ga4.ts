@@ -100,10 +100,11 @@ export class GA4CrossDomain {
             // And not those that may have been created somewhere else. This is for better generation
             // of the _gl parameters in setups with subdomains of the same domain where cookies from different
             // subdomains may be present, while not matching the actual trackers on the page
+            try {
+                if (typeof source.google_tag_data !== 'undefined' &&
+                    typeof source.google_tag_data.td !== 'undefined') {
 
-            if (typeof source.google_tag_data.td !== 'undefined') {
-                try {
-                    let filteredCookieData:{[key: string]: string} = {};
+                    let filteredCookieData: { [key: string]: string } = {};
                     // WARNING UNDOCUMENTED STUFF!
                     // The line below is based on reverse engineering of the public variable google_tag_data.td
                     // We noticed it contains an associative array of all the GA4 tags actually
@@ -147,9 +148,9 @@ export class GA4CrossDomain {
                             logger.log('Experimental matching of cookies and GA4 trackers failed. Keeping the original list', cookieData);
                         }
                     }
-                } catch (e) {
-                    // If any runtime error occurs here, we don't want it to cause the decoration to fail
                 }
+            } catch (e) {
+                // If any runtime error occurs here, we don't want it to cause the decoration to fail
             }
 
             // Check again that we have the GA glBridge util
