@@ -158,7 +158,12 @@ export class GA4CrossDomain {
                 typeof source.google_tag_data.glBridge !== 'undefined' &&
                 typeof source.google_tag_data.glBridge.generate !== 'undefined'
             ) {
-                const _gl = source.google_tag_data.glBridge.generate(cookieData);
+                // We sort the cookie data by the shortest, to get _ga first in the list
+                const sortedCookieData: any = {};
+                Object.keys(cookieData).sort((a,b) => a.length - b.length).forEach((k) => {
+                    sortedCookieData[k] = cookieData[k];
+                });
+                const _gl = source.google_tag_data.glBridge.generate(sortedCookieData);
                 this._gl = _gl;
                 (source as any)[this.globalVariableName] = _gl;
             }
