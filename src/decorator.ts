@@ -198,6 +198,8 @@ export class Decorator {
             detectGAParameters((params) =>  {
                 this.trackingParams.gacid = params.gacid;
                 this.trackingParams._ga = params._ga;
+                this.trackingParams._gac = params._gac;
+                this.trackingParams._gcl = params._gcl;
             }, this.namespace.source);
             const GA4 = new GA4CrossDomain();
             GA4.detectGA4CrossDomainParam((_gl) => {

@@ -101,56 +101,88 @@ export class GA4CrossDomain {
             // of the _gl parameters in setups with subdomains of the same domain where cookies from different
             // subdomains may be present, while not matching the actual trackers on the page
             try {
+                let filteredCookieData: { [key: string]: string } = {};
+                let ga4IDsOnThisPage: string[];
+                let detectionMethod = '';
+
+                // WARNING UNDOCUMENTED STUFF!
+                // The line below is based on reverse engineering of the public variable google_tag_data.td
+                // We noticed it contains an associative array of all the GA4 tags actually
+                // loaded on the page, where keys are measurement IDs like G-AB12CDEFGHI
                 if (typeof source.google_tag_data !== 'undefined' &&
                     typeof source.google_tag_data.td !== 'undefined') {
-
-                    let filteredCookieData: { [key: string]: string } = {};
-                    // WARNING UNDOCUMENTED STUFF!
-                    // The line below is based on reverse engineering of the public variable google_tag_data.td
-                    // We noticed it contains an associative array of all the GA4 tags actually
-                    // loaded on the page, where keys are measurement IDs like G-AB12CDEFGHI
-                    let ga4IDsOnThisPage = Object.keys(source.google_tag_data.td);
+                    detectionMethod = 'google_tag_data.td';
+                    ga4IDsOnThisPage = Object.keys(source.google_tag_data.td);
 
                     if (Array.isArray(ga4IDsOnThisPage) && ga4IDsOnThisPage.length > 0) {
                         // Remove the initial G-
                         ga4IDsOnThisPage = ga4IDsOnThisPage.map((id) => id.replace(/^G-/, ''));
-                        let ga4Added = 0;
-                        let ga4Skipped = 0;
-                        for (let cookie of cookies) {
-                            if (cookie.version != 4) {
-                                // Add the GA3 cookies as usual
-                                filteredCookieData[cookie.name] = cookie.clientID;
-                            } else {
-                                // ? ARE WE SURE THE GA4 COOKIES ARE ALWAYS NAMED _ga_$MEASUREMENT_ID_MINUS_INITIAL_G- ?
-                                // TODO Write a safer matching function
-                                //  by searching each element of ga4IDsOnThisPage within cookie.name
-                                const measurementIDIsh = cookie.name.replace(/^_ga_/, '');
-                                if (ga4IDsOnThisPage.indexOf(measurementIDIsh) !== -1) {
-                                    ga4Added++;
-                                    filteredCookieData[cookie.name] = cookie.clientID;
-                                } else {
-                                    ga4Skipped++;
-                                    logger.log('[_GA4CrossDomain - EXPERIMENTAL] Skipping cookie not matching with google_tag_data.td', cookie.name);
+                    }
+                } else {
+                    // If google_tag_data.td try to detect GA4 trackers from the scripts present on the page
+                    ga4IDsOnThisPage = [];
+                    detectionMethod = 'scripts';
+                    const allScripts = document.getElementsByTagName('script');
+                    for (let i = 0; i < allScripts.length; i++) {
+                        const src = allScripts[i].getAttribute('src');
+                        if (src) {
+                            const parts = src.split('?');
+                            if (parts.length > 1) {
+                                const hostPart = parts[0];
+                                const qsPart = parts[1];
+                                const domainRe = /googletagmanager\.com|google-analytycs/;
+                                const qsRe = /(\?|&|&amp;)?id=(G-([^&]+))&?.*$/;
+                                if (domainRe.test(hostPart)) {
+                                    const matches = qsPart.match(qsRe);
+                                    if (matches && matches.length >= 3) {
+                                        ga4IDsOnThisPage.push(matches[3]);
+                                    }
                                 }
                             }
                         }
-                        // If we found at least a valid GA4 cookie
-                        if (ga4Added > 0) {
-                            // ... and the new list is smaller than the unfiltered one
-                            if (ga4Skipped > 0) {
-                                // ... overwrite the list of cookies with the filtered one
-                                cookieData = filteredCookieData;
-                                logger.log('Successfully filtered the list of cookies used for decorating based on google_tag_data.td', cookieData);
-                            }
+                    }
+                }
+
+                // At this point, if one of the methods has found evidence of GA4 measurement IDs on the page,
+                // ga4IDsOnThisPage should contain some items
+                let ga4Added = 0;
+                let ga4Skipped = 0;
+                for (let cookie of cookies) {
+                    if (cookie.version != 4) {
+                        // Add the GA3 cookies regardless
+                        filteredCookieData[cookie.name] = cookie.clientID;
+                    } else {
+                        // ? ARE WE SURE THE GA4 COOKIES ARE ALWAYS NAMED _ga_$MEASUREMENT_ID_MINUS_INITIAL_G- ?
+                        // TODO Write a safer matching function
+                        //  by searching each element of ga4IDsOnThisPage within cookie.name
+                        const measurementIDIsh = cookie.name.replace(/^_ga_/, '');
+                        if (ga4IDsOnThisPage.indexOf(measurementIDIsh) !== -1) {
+                            ga4Added++;
+                            filteredCookieData[cookie.name] = cookie.clientID;
                         } else {
-                            // Otherwise, if our matching excluded all cookies, then it's because something went wrong,
-                            // then we just use all cookies and leave the list untouched
-                            logger.log('Experimental matching of cookies and GA4 trackers failed. Keeping the original list', cookieData);
+                            ga4Skipped++;
+                            logger.log('[_GA4CrossDomain - EXPERIMENTAL] Skipping cookie not matching with detection from ' + detectionMethod, cookie.name);
                         }
                     }
                 }
+                // If we found at least a valid GA4 cookie
+                if (ga4Added > 0) {
+                    // ... and the new list is smaller than the unfiltered one
+                    if (ga4Skipped > 0) {
+                        // ... overwrite the list of cookies with the filtered one
+                        cookieData = filteredCookieData;
+                        logger.log('Successfully FILTERED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
+                    } else {
+                        logger.log('Successfully VERIFIED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
+                    }
+                } else {
+                    // Otherwise, if our matching excluded all cookies, then we assume it's because something
+                    // went wrong with the detection, and we just use all cookies and leave the list untouched
+                    logger.log('Experimental matching of cookies and GA4 trackers failed. Keeping the original list. Last detection method: ' + detectionMethod, cookieData);
+                }
             } catch (e) {
                 // If any runtime error occurs here, we don't want it to cause the decoration to fail
+                logger.log('[_GA4CrossDomain - EXPERIMENTAL] - Ignoring runtime error', e);
             }
 
             // Check again that we have the GA glBridge util

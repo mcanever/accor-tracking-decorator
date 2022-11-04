@@ -12,11 +12,11 @@ declare global {
 
 // Ported in typescript-ish from accor-booking/booking.js
 // Detects Google Analytics Client ID and Linker Param
-export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: string|false}) => void, source: any = window): void {
+export function detectGAParameters(cback: (params: {gacid: string|false, _ga: string|false, _gac: string|false, _gcl: string|false}) => void, source: any = window): void {
     source.AccorBooking_GUA_ClientId = false;
     source.AccorBooking_GUA_linkerParam = false;
 
-    let cbackParams:{gacid: string|false,  _ga: string|false} = {gacid: false, _ga: false};
+    let cbackParams:{gacid: string|false, _ga: string|false, _gac: string|false, _gcl: string|false} = {gacid: false, _ga: false, _gac: false, _gcl: false};
     //Wait for ga() to be available and get clientId
     let clientIdIntervalCounter = 0;
     let lock = false;
@@ -57,12 +57,32 @@ export function detectGAParameters(cback: (params: {gacid: string|false,  _ga: s
                             logger.success('Detected clientID (gacid): ' + clientId);
                             let linkerParam = trackers[trackerToUse].get('linkerParam');
                             if (linkerParam) {
-                                const parts = linkerParam.split('=');
-                                if (parts.length > 1) {
-                                    linkerParam = parts[1];
-                                    source.AccorBooking_GUA_linkerParam = linkerParam;
-                                    cbackParams._ga = linkerParam;
-                                    logger.success ('Detected linker param (_ga): ' + linkerParam);
+                                const qsChunks: string[] = linkerParam.split('&');
+                                if (qsChunks.length > 0) {
+                                    qsChunks.forEach((chunk: string) => {
+                                        const parts = chunk.split('=');
+                                        if (parts.length > 1) {
+                                            const paramName = parts[0];
+                                            const paramValue = parts[1];
+                                            if (paramName === '_ga') {
+                                                source.AccorBooking_GUA_linkerParam = paramValue;
+                                                cbackParams._ga = paramValue;
+                                            }
+                                            if (paramName === '_gac') {
+                                                cbackParams._gac = paramValue;
+                                            }
+                                            if (paramName === '_gcl') {
+                                                cbackParams._gcl = paramValue;
+                                            }
+                                        }
+                                    });
+                                    let foundParams: any = {};
+                                    Object.keys(cbackParams).forEach((k) => {
+                                        if ((cbackParams as any)[k] !== false) {
+                                            foundParams[k] = (cbackParams as any)[k];
+                                        }
+                                    });
+                                    logger.success ('Detected linker params (' + Object.keys(foundParams).join(', ') + '): ', foundParams);
                                     logger.log ('Detected GA parameters after (ms): ', utils.getElapsedMS());
                                 } else {
                                     logger.log('WARN likerParam format Error', linkerParam)
