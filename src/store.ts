@@ -30,7 +30,7 @@ export class Store {
 
     static saveToCookie(val: any): void {
         const encoded = Store.encode(JSON.stringify(val));
-        utils.Cookies.set(Store.cookie_name, encoded, { expires: Store.cookie_duration });
+        utils.Cookies.set(Store.cookie_name, encoded, { expires: Store.cookie_duration, sameSite: location.protocol === 'https:' ? 'none' : undefined, secure: location.protocol === 'https:' });
         logger.log('Save to cookie', Store.cookie_name, val);
     }
 
