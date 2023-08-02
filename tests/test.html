@@ -9,8 +9,8 @@
          }
     </script>
     <!-- Decorator library -->
-    <script src="./decorator.js" async></script>
-    <!-- <script src="./ga4crossdomain.js" async></script> -->
+    <!-- script src="./decorator.js" async></script -->
+    <script src="./ga4crossdomain.js"></script>
 
     <!-- Decorator configuration -->
     <script>
@@ -42,11 +42,11 @@
                 "hotel_city": "Dubai",
                 "hotel_country": "United Arab Emirates",
                 "hotel_brand": "sofitel",
-                "gua_id": "UA-73084925-48",
-                "gua_id_hotel": "UA-49671461-1",
+                // "gua_id": "UA-73084925-48",
+                // "gua_id_hotel": "UA-49671461-1",
                 "gua_id_extra": "",
-                "gua_id_sofitel": "UA-73084925-48",
-                "gua_id_hotel_sofitel": "UA-49671461-1",
+                // "gua_id_sofitel": "UA-73084925-48",
+                // "gua_id_hotel_sofitel": "UA-49671461-1",
                 "gua_id_extra_sofitel": "",
                 "ga4_id": "G-W7XNE5CS81",
                 "ga4_id_hotel": "G-DBY4YT0XKS",
@@ -91,6 +91,10 @@
         setTimeout(function () {
             loadAllTagManagers();
         }, 100);
+
+        document.addEventListener('accor_ga4_param_updated',function (event) {
+            console.log('BANANAAAA', event.detail);
+        })
     </script>
     <style>
         html, body {

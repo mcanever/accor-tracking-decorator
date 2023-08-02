@@ -15,6 +15,132 @@ type SingleGACookie = {
     clientID: string
 }
 
+/**
+ * MANUAL _gl GENERATION CODE
+ */
+
+let baseConversionChars: string;
+let charToIndex: {[key:string]: number};
+let CRCTableCache: number[];
+
+/**
+ * Returns a static list of characters (an alphabet) to be used in encoding.
+ * @returns string
+ */
+function getBaseConversionChars(): string  {
+    let charList = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    charList += charList.toLowerCase() + "0123456789-_";
+    return charList + "."
+}
+
+/**
+ * Generates an associative array returning the index of each character in the
+ * theCharlist string variable
+ * @returns {[key: string]: number}
+ */
+function getCharToIndex(): {[key: string]: number} {
+    const arr = baseConversionChars;
+    let map: {[key: string]: number} = {};
+
+    for (let i = 0; i < arr.length; ++i) {
+        map[arr[i]] = i;
+    }
+    return map;
+}
+
+/**
+ * Generates a hash of a string, seeded with a fingerprint
+ * It looks like a CRC32 implementation.
+ * @param str The string to encode
+ * @param minutes Obscure: minutes to subtract from current timestamp in the fingerprint
+ * @returns {string}
+ */
+function hashStr(str:string, minutes?:number): string {
+    /**
+     * Prepend fingerprint data to the string to hash
+     */
+    const fullString = [
+        navigator.userAgent,
+        (new Date).getTimezoneOffset(),
+        (navigator as any).userLanguage || navigator.language,
+        Math.floor((new Date(Date.now())).getTime() / 60 / 1E3) - (void 0 === minutes ? 0 : minutes),
+        str
+    ].join("*");
+
+    let CRCTable: number[];
+    if (! (CRCTable = CRCTableCache)) {
+        CRCTable = Array(256);
+        for (let idx = 0; 256 > idx; idx++) {
+            let val=idx;
+            for (let bit = 0; 8 > bit; bit++) {
+                val = val & 1 ? val >>> 1 ^ 3988292384 : val >>> 1;
+            }
+            CRCTable[idx] = val;
+        }
+    }
+    CRCTableCache = CRCTable;
+    let crc = 4294967295;
+    for (let idx = 0; idx < fullString.length; idx++) {
+        crc = crc >>> 8 ^ CRCTableCache[(crc ^ fullString.charCodeAt(idx)) & 255];
+    }
+    return ((crc ^ -1) >>> 0).toString(36);
+}
+
+/**
+ * Generates the _gl parameter.
+ * Takes as first parameter an associative array names to ClientIDs.
+ *
+ * @param cookieMap Object.
+ *        EG {"_ga_B56CM9C47V":"1690968794.3.1.1690968795.59.0.0","_ga":"236872392.1690905690"}
+ * @returns {string}
+ */
+function glGenerate(cookieMap: { [key: string]: string }) {
+    let cookieData = [];
+    let cookieName: string;
+
+    for (cookieName in cookieMap) if (cookieMap.hasOwnProperty(cookieName)) {
+        var clientID = cookieMap[cookieName];
+        if (void 0 !== clientID && clientID === clientID && null !== clientID && "[object Object]" !== clientID.toString()) {
+            cookieData.push(cookieName);
+            const cookieDataArr = cookieData;
+            const pushFn = cookieDataArr.push;
+            clientID = String(clientID);
+            baseConversionChars = baseConversionChars || getBaseConversionChars();
+            charToIndex = charToIndex || getCharToIndex();
+
+            // Encode the current ClientID using the alphabet. Looks like a base64URL encoding
+            // - Splits the string into chunks of 3 bytes ( each 0-255 )
+            // - Splits the bits of the 3 characters into 4 7-bit chunks ( each 0-63 )
+            // - Converts the bits into characters using the base conversion alphabet and pushes them to an array
+            // - Converts the array
+            const hashArr = [];
+            for (let idx = 0; idx < clientID.length; idx += 3) {
+                const has1MoreByte = idx + 1 < clientID.length;
+                const has2MoreBytes = idx + 2 < clientID.length;
+                let b1 = clientID.charCodeAt(idx);
+                let b2 = has1MoreByte ? clientID.charCodeAt(idx + 1) : 0;
+                let b3 = has2MoreBytes ? clientID.charCodeAt(idx + 2) : 0;
+                const b0 = b1 >> 2;
+                b1 = (b1 & 3) << 4 | b2 >> 4;
+                b2 = (b2 & 15) << 2 | b3 >> 6;
+                b3 &= 63;
+                // has2MoreBytes || (b3 = 64, has1MoreByte || (b2 = 64));
+                if (!has2MoreBytes) {
+                    b3=64;
+                    if (!has1MoreByte) {
+                        b2 = 64;
+                    }
+                }
+                hashArr.push(baseConversionChars[b0], baseConversionChars[b1], baseConversionChars[b2], baseConversionChars[b3]);
+            }
+            pushFn.call(cookieDataArr, hashArr.join(""));
+        }
+    }
+    const cookieDataStr = cookieData.join("*");
+    return ["1", hashStr(cookieDataStr), cookieDataStr].join("*")
+}
+
+
 export class GA4CrossDomain {
     public _gl: string | false = false;
     public cookieCount = 0;
@@ -83,12 +209,9 @@ export class GA4CrossDomain {
         return cleanCookies;
     }
 
-    public getGA4DecoratorParam(eventToDispatch: string | false, source = window):  string | false {
-        const _gl_before = this._gl;
-        let changed = false;
+    public getFilteredGACookies(source = window) {
         const cookies = this.getGACookies();
-        if (cookies.length > this.cookieCount) {
-            this.cookieCount = cookies.length;
+        if (cookies.length > 0) {
             let cookieData:{[key: string]: string} = {};
             for (let cookie of cookies) {
                 cookieData[cookie.name] = cookie.clientID;
@@ -171,9 +294,9 @@ export class GA4CrossDomain {
                     if (ga4Skipped > 0) {
                         // ... overwrite the list of cookies with the filtered one
                         cookieData = filteredCookieData;
-                        logger.log('Successfully FILTERED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
+                        // logger.log('Successfully FILTERED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
                     } else {
-                        logger.log('Successfully VERIFIED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
+                        //logger.log('Successfully VERIFIED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
                     }
                 } else {
                     // Otherwise, if our matching excluded all cookies, then we assume it's because something
@@ -185,17 +308,33 @@ export class GA4CrossDomain {
                 logger.log('[_GA4CrossDomain - EXPERIMENTAL] - Ignoring runtime error', e);
             }
 
+            // We sort the cookie data by the shortest, to get _ga first in the list
+            const sortedCookieData: any = {};
+            Object.keys(cookieData).sort((a,b) => a.length - b.length).forEach((k) => {
+                sortedCookieData[k] = cookieData[k];
+            });
+            return sortedCookieData;
+        }
+        return {};
+    }
+
+    public getGA4DecoratorParam(eventToDispatch: string | false, source = window):  string | false {
+        const _gl_before = this._gl;
+        let changed = false;
+        const sortedCookieData = this.getFilteredGACookies();
+        if (Object.keys(sortedCookieData).length > this.cookieCount) {
+            this.cookieCount = Object.keys(sortedCookieData).length;
             // Check again that we have the GA glBridge util
             if (typeof source.google_tag_data !== 'undefined' &&
                 typeof source.google_tag_data.glBridge !== 'undefined' &&
                 typeof source.google_tag_data.glBridge.generate !== 'undefined'
             ) {
-                // We sort the cookie data by the shortest, to get _ga first in the list
-                const sortedCookieData: any = {};
-                Object.keys(cookieData).sort((a,b) => a.length - b.length).forEach((k) => {
-                    sortedCookieData[k] = cookieData[k];
-                });
                 const _gl = source.google_tag_data.glBridge.generate(sortedCookieData);
+                this._gl = _gl;
+                (source as any)[this.globalVariableName] = _gl;
+            } else {
+                const _gl = this.manualGenerate_gl(sortedCookieData);
+                logger.log('Generated _gl with alternative solution');
                 this._gl = _gl;
                 (source as any)[this.globalVariableName] = _gl;
             }
@@ -214,7 +353,7 @@ export class GA4CrossDomain {
 
         //Wait for google_tag_data to be available and use the glBridge to generate our value
         // Up to 4000 retries every 150ms (10 minutes)
-        let retriesToGo = 4000;
+        let retriesToGo = 2000;
 
         const searchForGa4DecoratorParam = () => {
             // logger.log ('searchForGa4DecoratorParam to go', retriesToGo);
@@ -222,14 +361,15 @@ export class GA4CrossDomain {
             const _gl_before = this._gl;
 
             if (
-                typeof source.google_tag_data !== 'undefined' &&
+                (typeof source.google_tag_data !== 'undefined' &&
                 typeof source.google_tag_data.glBridge !== 'undefined' &&
-                typeof source.google_tag_data.glBridge.generate !== 'undefined'
+                typeof source.google_tag_data.glBridge.generate !== 'undefined')
+                || retriesToGo < (2000 - 5) // If at least 1.5 seconds have elapsed, try to detect using the alternate method
             ) {
                 this.getGA4DecoratorParam(this.onUpdateEventName, source);
 
                 if (_gl_before === false && this._gl !== false) {
-                    retriesToGo = 200; // Keep trying, but not for the whole 10 minutes, just in case a new cookie appears...
+                    retriesToGo = 100; // Keep trying, but not for the whole 10 minutes, just in case a new cookie appears...
                     // logger.log('First _gl found', _gl_before, this._gl);
                 }
 
@@ -250,7 +390,7 @@ export class GA4CrossDomain {
         // run immediately then start retrying
         // logger.log('START GA4 Params detection');
         searchForGa4DecoratorParam();
-        let ga4Interval = setInterval(searchForGa4DecoratorParam, 150);
+        let ga4Interval = setInterval(searchForGa4DecoratorParam, 300);
 
         const that = this;
         //Give up after 10 minutes
@@ -311,5 +451,9 @@ export class GA4CrossDomain {
         }
 
         return typeof this.postDecorateCallback === 'function' ? this.postDecorateCallback(obj) : obj;
+    }
+
+    public manualGenerate_gl(cookieMap: { [key: string]: string }){
+        return glGenerate(cookieMap);
     }
 }
