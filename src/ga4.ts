@@ -35,7 +35,7 @@ function getBaseConversionChars(): string  {
 
 /**
  * Generates an associative array returning the index of each character in the
- * theCharlist string variable
+ * baseConversionChars string variable
  * @returns {[key: string]: number}
  */
 function getCharToIndex(): {[key: string]: number} {
