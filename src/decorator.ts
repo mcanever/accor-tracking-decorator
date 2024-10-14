@@ -118,9 +118,11 @@ export class Decorator {
             const href = a.getAttribute('href');
             if (href !== null) {
                 const hostname = utils.parseUrlParts(href).hostname.toLowerCase();
-                const validDomain = this.config.domainsToDecorate
-                  .map((re: RegExp) => re.test(hostname))
-                  .some((a) => a);
+                const isNotSameDomain = hostname != document.location.hostname;
+                const domainMatchesRegExps = this.config.domainsToDecorate
+                          .map((re: RegExp) => re.test(hostname))
+                          .some((a) => a);
+                const validDomain = isNotSameDomain && domainMatchesRegExps;
                 if (validDomain) {
                     const newHref = this.decorateURL(href);
                     logger.log('Autodecorate', href, newHref);
