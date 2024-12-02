@@ -143,6 +143,7 @@ function glGenerate(cookieMap: { [key: string]: string }) {
 
 export class GA4CrossDomain {
     public _gl: string | false = false;
+    public gacid: string | false = false;
     public cookieCount = 0;
     public postDecorateCallback: (obj: any) => any;
 
@@ -400,6 +401,44 @@ export class GA4CrossDomain {
                 clearInterval(ga4Interval);
                 dispatchEvent(that.onUpdateEventName);
                 cback(that._gl);
+            }
+        }, 600000);
+    }
+
+    detectGA4ClientID(cback: (gacid: string|false) => void, source: any = window): void {
+        this.gacid = false;
+
+        //Wait for gaGlobal.vid to get the client ID
+        // Up to 2000 retries every 300 (10 minutes)
+        let retriesToGo = 2000;
+
+        const searchForGa4ClientID = () => {
+            retriesToGo--;
+            if (
+                typeof source.gaGlobal !== 'undefined' &&
+                typeof source.gaGlobal.vid !== 'undefined' &&
+                source.gaGlobal.vid !==''
+            ) {
+                this.gacid = source.gaGlobal.vid;
+                if (retriesToGo <= 0) {
+                    cback(this.gacid);
+                    clearInterval(ga4Interval);
+                }
+            } else if (retriesToGo <= 0) {
+                clearInterval(ga4Interval);
+            }
+        };
+
+        // run immediately then start retrying
+        searchForGa4ClientID();
+        let ga4Interval = setInterval(searchForGa4ClientID, 300);
+
+        const that = this;
+        //Give up after 10 minutes
+        setTimeout(function() {
+            if (ga4Interval !== null) {
+                clearInterval(ga4Interval);
+                cback(that.gacid);
             }
         }, 600000);
     }
