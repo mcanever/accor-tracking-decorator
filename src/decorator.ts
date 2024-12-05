@@ -204,5 +204,15 @@ export class Decorator {
         document.addEventListener('ready', function () {
             decorator.dispatchEvent();
         });
+
+
+        // LOAD GA4CROSSDOMAIN
+        const crossDomainScript = document.createElement('script');
+        crossDomainScript.async = true;
+        crossDomainScript.src = 'https://staticaws.fbwebprogram.com/accor_tracking_decorator/ga4crossdomain.js';
+        if (document.head) {
+            document.head.appendChild(crossDomainScript);
+        }
+
     }
 }
