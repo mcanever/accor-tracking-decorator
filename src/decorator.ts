@@ -209,7 +209,7 @@ export class Decorator {
         // LOAD GA4CROSSDOMAIN
         const crossDomainScript = document.createElement('script');
         crossDomainScript.async = true;
-        crossDomainScript.src = 'https://staticaws.fbwebprogram.com/accor_tracking_decorator/ga4crossdomain.js';
+        crossDomainScript.src = 'https://staticaws.fbwebprogram.com/accor_tracking_decorator/ga4crossdomain_exp.js';
         if (document.head) {
             document.head.appendChild(crossDomainScript);
         }
