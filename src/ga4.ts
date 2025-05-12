@@ -4,7 +4,9 @@ import { dispatchEvent, getUrlVars, parseUrlParts } from "./dom";
 
 declare global {
     interface Window {
-        google_tag_data: any
+        google_tag_data: any,
+        gtag: any,
+        dataLayer: any,
     }
 }
 
@@ -97,7 +99,6 @@ function hashStr(str:string, minutes?:number): string {
 function glGenerate(cookieMap: { [key: string]: string }) {
     let cookieData = [];
     let cookieName: string;
-
     for (cookieName in cookieMap) if (cookieMap.hasOwnProperty(cookieName)) {
         var clientID = cookieMap[cookieName];
         if (void 0 !== clientID && clientID === clientID && null !== clientID && "[object Object]" !== clientID.toString()) {
@@ -230,20 +231,23 @@ export class GA4CrossDomain {
                 let detectionMethod = '';
 
                 // WARNING UNDOCUMENTED STUFF!
-                // The line below is based on reverse engineering of the public variable google_tag_data.td
+                // The line below is based on reverse engineering of the public variable google_tag_data
                 // We noticed it contains an associative array of all the GA4 tags actually
                 // loaded on the page, where keys are measurement IDs like G-AB12CDEFGHI
-                if (typeof source.google_tag_data !== 'undefined' &&
-                    typeof source.google_tag_data.td !== 'undefined') {
-                    detectionMethod = 'google_tag_data.td';
-                    ga4IDsOnThisPage = Object.keys(source.google_tag_data.td);
-
-                    if (Array.isArray(ga4IDsOnThisPage) && ga4IDsOnThisPage.length > 0) {
-                        // Remove the initial G-
-                        ga4IDsOnThisPage = ga4IDsOnThisPage.map((id) => id.replace(/^G-/, ''));
+                if (typeof source.google_tag_data !== 'undefined' && source.google_tag_data !== null) {
+                    const keys_to_check = Object.keys(source.google_tag_data).filter((k) => {
+                        return Object.keys(source.google_tag_data[k]).indexOf('container') !== -1;
+                    });
+                    if (keys_to_check.length > 0) {
+                        detectionMethod = 'google_tag_data';
+                        ga4IDsOnThisPage = Object.keys(source.google_tag_data[keys_to_check[0]].container).filter((id) => /^G-/.test(id));
+                        if (Array.isArray(ga4IDsOnThisPage) && ga4IDsOnThisPage.length > 0) {
+                            // Remove the initial G-
+                            ga4IDsOnThisPage = ga4IDsOnThisPage.map((id) => id.replace(/^G-/, ''));
+                        }
                     }
                 } else {
-                    // If google_tag_data.td try to detect GA4 trackers from the scripts present on the page
+                    // If google_tag_data fails, try to detect GA4 trackers from the scripts present on the page
                     ga4IDsOnThisPage = [];
                     detectionMethod = 'scripts';
                     const allScripts = document.getElementsByTagName('script');
@@ -320,25 +324,16 @@ export class GA4CrossDomain {
     }
 
     public getGA4DecoratorParam(eventToDispatch: string | false, source = window):  string | false {
+        // console.log('getGA4DecoratorParam');
         const _gl_before = this._gl;
         let changed = false;
         const sortedCookieData = this.getFilteredGACookies();
         if (Object.keys(sortedCookieData).length > this.cookieCount) {
             this.cookieCount = Object.keys(sortedCookieData).length;
-            // Check again that we have the GA glBridge util
-            if (typeof source.google_tag_data !== 'undefined' &&
-                typeof source.google_tag_data.glBridge !== 'undefined' &&
-                typeof source.google_tag_data.glBridge.generate !== 'undefined'
-            ) {
-                const _gl = source.google_tag_data.glBridge.generate(sortedCookieData);
-                this._gl = _gl;
-                (source as any)[this.globalVariableName] = _gl;
-            } else {
                 const _gl = this.manualGenerate_gl(sortedCookieData);
                 logger.log('Generated _gl with alternative solution');
                 this._gl = _gl;
                 (source as any)[this.globalVariableName] = _gl;
-            }
             changed = _gl_before != this._gl;
         }
         if (eventToDispatch !== false && changed) {
@@ -360,31 +355,20 @@ export class GA4CrossDomain {
             // logger.log ('searchForGa4DecoratorParam to go', retriesToGo);
             retriesToGo--;
             const _gl_before = this._gl;
+            this.getGA4DecoratorParam(this.onUpdateEventName, source);
 
-            if (
-                (typeof source.google_tag_data !== 'undefined' &&
-                typeof source.google_tag_data.glBridge !== 'undefined' &&
-                typeof source.google_tag_data.glBridge.generate !== 'undefined')
-                || retriesToGo < (2000 - 5) // If at least 1.5 seconds have elapsed, try to detect using the alternate method
-            ) {
-                this.getGA4DecoratorParam(this.onUpdateEventName, source);
+            if (_gl_before === false && this._gl !== false) {
+                retriesToGo = 100; // Keep trying, but not for the whole 10 minutes, just in case a new cookie appears...
+                // logger.log('First _gl found', _gl_before, this._gl);
+            }
+            if (_gl_before != this._gl) {
+                cback(this._gl);
+            }
 
-                if (_gl_before === false && this._gl !== false) {
-                    retriesToGo = 100; // Keep trying, but not for the whole 10 minutes, just in case a new cookie appears...
-                    // logger.log('First _gl found', _gl_before, this._gl);
-                }
-
-                if (_gl_before != this._gl) {
-                    cback(this._gl);
-                }
-
-                if (retriesToGo <= 0) {
-                    clearInterval(ga4Interval);
-                    ga4Interval = null;
-                    logger.log(this._gl === false ? 'Search for GA4 _gl failed after 10 minutes' : 'Stopping successful search of _gl');
-                }
-            } else {
-                // logger.log('google_tag_data.glBridge not found yet');
+            if (retriesToGo <= 0) {
+                clearInterval(ga4Interval);
+                ga4Interval = null;
+                logger.log(this._gl === false ? 'Search for GA4 _gl failed after 10 minutes' : 'Stopping successful search of _gl');
             }
         };
 
