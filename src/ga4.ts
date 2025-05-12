@@ -154,7 +154,7 @@ export class GA4CrossDomain {
     public getCookieVersionAndClientID(name:string, rawValue: string): { version: number,  clientID: string} {
         // GUA cookies seems to look like GA1.X.$CLIENTID where X is a digit (but let's assume there can be more)
         const ga3RE = /^GA1\.\d+\.(.+)$/;
-        const ga4RE = /^GS1\.\d+\.(.+)$/;
+        const ga4RE = /^GS[0-9]+\.\d+\.(.+)$/;
         if (ga3RE.test(rawValue)) {
             const matches = ga3RE.exec(rawValue);
             return { version: 3, clientID: matches[1] };

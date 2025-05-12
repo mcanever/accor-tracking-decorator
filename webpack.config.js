@@ -52,6 +52,7 @@ module.exports = function(env) {
         },
         output: {
             filename: '[name].js',
+            hashFunction: 'sha256',
             path: path.resolve(__dirname, output),
             pathinfo: false,
         },

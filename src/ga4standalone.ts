@@ -10,7 +10,7 @@ declare global {
 
 import {GA4CrossDomain} from "./ga4";
 if (typeof window._GA4CrossDomain === 'undefined') {
-    logger.debug = typeof window._GA4CrossDomain_Debug !== 'undefined' && window._GA4CrossDomain_Debug;
+    logger.debug = (typeof window._GA4CrossDomain_Debug !== 'undefined' && window._GA4CrossDomain_Debug) || location.href.indexOf('debug_ga4crossdomain') !== -1;
     window._GA4CrossDomain = new GA4CrossDomain();
     window._GA4CrossDomain.detectGA4CrossDomainParam((_gl: string | false) => {
         if (typeof window._GA4CrossDomain_ReadyCallback === 'function') {
