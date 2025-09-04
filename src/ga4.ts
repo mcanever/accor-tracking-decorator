@@ -234,13 +234,13 @@ export class GA4CrossDomain {
                 // The line below is based on reverse engineering of the public variable google_tag_data
                 // We noticed it contains an associative array of all the GA4 tags actually
                 // loaded on the page, where keys are measurement IDs like G-AB12CDEFGHI
-                if (typeof source.google_tag_data !== 'undefined' && source.google_tag_data !== null) {
-                    const keys_to_check = Object.keys(source.google_tag_data).filter((k) => {
-                        return Object.keys(source.google_tag_data[k]).indexOf('container') !== -1;
+                if (typeof window.google_tag_data !== 'undefined' && window.google_tag_data !== null) {
+                    const keys_to_check = Object.keys(window.google_tag_data).filter((k) => {
+                        return Object.keys(window.google_tag_data[k]).indexOf('container') !== -1;
                     });
                     if (keys_to_check.length > 0) {
                         detectionMethod = 'google_tag_data';
-                        ga4IDsOnThisPage = Object.keys(source.google_tag_data[keys_to_check[0]].container).filter((id) => /^G-/.test(id));
+                        ga4IDsOnThisPage = Object.keys(window.google_tag_data[keys_to_check[0]].container).filter((id) => /^G-/.test(id));
                         if (Array.isArray(ga4IDsOnThisPage) && ga4IDsOnThisPage.length > 0) {
                             // Remove the initial G-
                             ga4IDsOnThisPage = ga4IDsOnThisPage.map((id) => id.replace(/^G-/, ''));
@@ -299,7 +299,7 @@ export class GA4CrossDomain {
                     if (ga4Skipped > 0) {
                         // ... overwrite the list of cookies with the filtered one
                         cookieData = filteredCookieData;
-                        // logger.log('Successfully FILTERED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
+                        //logger.log('Successfully FILTERED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
                     } else {
                         //logger.log('Successfully VERIFIED the list of cookies used for decorating. Detection method: ' + detectionMethod, cookieData);
                     }
