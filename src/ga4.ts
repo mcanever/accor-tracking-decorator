@@ -195,20 +195,20 @@ export class GA4CrossDomain {
 
         // Deduplicate based on the client ID, with a matrix
         // This is not efficient, but we assume a very small array ( 10 elements max in d-edge environment)
-        let matrix: {[key:string] : string} = {};
-
-        for (let cookie of allCookies) {
-            // If a clientID already exists, its corresponding key will be overwritten by the later value
-            matrix[cookie.clientID] = cookie.name;
-        }
-        Object.keys(matrix).forEach((clientID) => {
-            const name = matrix[clientID];
-            cleanCookies.push(allCookies.filter((cookie: SingleGACookie) => {
-                return cookie.name === name && cookie.clientID === clientID;
-            })[0]);
-        });
-
-        return cleanCookies;
+        // let matrix: {[key:string] : string} = {};
+        //
+        // for (let cookie of allCookies) {
+        //     // If a clientID already exists, its corresponding key will be overwritten by the later value
+        //     matrix[cookie.clientID] = cookie.name;
+        // }
+        // Object.keys(matrix).forEach((clientID) => {
+        //     const name = matrix[clientID];
+        //     cleanCookies.push(allCookies.filter((cookie: SingleGACookie) => {
+        //         return cookie.name === name && cookie.clientID === clientID;
+        //     })[0]);
+        // });
+        //logger.log('cleanCookies', cleanCookies, 'allCookies', allCookies, 'reallyAllCookies', reallyAllCookies);
+        return allCookies;
     }
 
     public getFilteredGACookies(source = window) {
