@@ -19,6 +19,16 @@ type SingleGACookie = {
 
 /**
  * MANUAL _gl GENERATION CODE
+ *
+ * gtag.js used to expose google_tag_data.glBridge.generate(), which this library relied on.
+ * Recent versions of gtag.js do not expose it anymore (google_tag_data.gl only holds the list
+ * of registered decorators), so the functions below are a faithful port of the internal
+ * gtag.js linker code (hash + base64url-like encoding). Verified against the live gtag.js
+ * in September 2026: same fingerprint, same CRC32 table, same alphabet, same "." padding.
+ *
+ * IMPORTANT: the hash embeds the current timestamp in minutes. The receiving gtag.js only
+ * accepts a _gl whose hash matches the current minute or one of the 2 previous minutes,
+ * so a _gl value must be regenerated shortly before it is actually used.
  */
 
 let baseConversionChars: string;
@@ -146,6 +156,15 @@ export class GA4CrossDomain {
     public _gl: string | false = false;
     public gacid: string | false = false;
     public cookieCount = 0;
+    /** Timestamp (ms) of the last _gl generation, 0 if never generated */
+    public generatedAt = 0;
+    /**
+     * Maximum age (ms) of the _gl value before it gets regenerated at decoration time.
+     * The hash inside _gl embeds the current minute and the destination gtag.js only accepts
+     * a hash that is 0, 1 or 2 minutes old, so anything older is silently discarded.
+     * 60 seconds keeps the value well inside that window.
+     */
+    public maxAge = 60000;
     public postDecorateCallback: (obj: any) => any;
 
     constructor(public globalVariableName = '_GA4CrossDomainParam', public onUpdateEventName = 'accor_ga4_param_updated') {
@@ -173,7 +192,8 @@ export class GA4CrossDomain {
         const cleanCookies:SingleGACookie[] = [];
         let atLeastOneGA4 = false;
         // Iterate all cookies in this domain
-        const pairs = document.cookie.split('; ');
+        const cookieString = (typeof document !== 'undefined' && typeof document.cookie === 'string') ? document.cookie : '';
+        const pairs = cookieString.split('; ');
         for (let pair of pairs) {
             const parts = pair.split('=');
             const name = parts[0];
@@ -323,17 +343,18 @@ export class GA4CrossDomain {
         return {};
     }
 
-    public getGA4DecoratorParam(eventToDispatch: string | false, source = window):  string | false {
-        // console.log('getGA4DecoratorParam');
+    /**
+     * Generates the _gl parameter, but only if more GA cookies are available than at the previous call.
+     * Used by the polling in detectGA4CrossDomainParam.
+     */
+    public getGA4DecoratorParam(eventToDispatch: string | false, source: any = window):  string | false {
         const _gl_before = this._gl;
         let changed = false;
         const sortedCookieData = this.getFilteredGACookies();
         if (Object.keys(sortedCookieData).length > this.cookieCount) {
             this.cookieCount = Object.keys(sortedCookieData).length;
-                const _gl = this.manualGenerate_gl(sortedCookieData);
-                logger.log('Generated _gl with alternative solution');
-                this._gl = _gl;
-                (source as any)[this.globalVariableName] = _gl;
+            this.storeGl(this.manualGenerate_gl(sortedCookieData), source);
+            logger.log('[GA4] Generated _gl from cookies', sortedCookieData, this._gl);
             changed = _gl_before != this._gl;
         }
         if (eventToDispatch !== false && changed) {
@@ -342,13 +363,65 @@ export class GA4CrossDomain {
         return this._gl;
     }
 
+    /**
+     * Regenerates the _gl parameter from the cookies currently on the page, regardless of whether
+     * new cookies appeared since the last generation. This refreshes the minute-based hash.
+     * If no GA4 cookie can be found anymore, the previous value is kept.
+     */
+    public refreshGl(source: any = window, eventToDispatch: string | false = this.onUpdateEventName): string | false {
+        const _gl_before = this._gl;
+        const sortedCookieData = this.getFilteredGACookies();
+        if (Object.keys(sortedCookieData).length === 0) {
+            logger.log('[GA4] Cannot regenerate _gl: no GA4 cookie found, keeping the previous value');
+            return this._gl;
+        }
+        const ageSeconds = Math.round((Date.now() - this.generatedAt) / 1000);
+        this.cookieCount = Object.keys(sortedCookieData).length;
+        this.storeGl(this.manualGenerate_gl(sortedCookieData), source);
+        logger.log('[GA4] Regenerated _gl, the previous value was ' + ageSeconds + 's old (max age ' + Math.round(this.maxAge / 1000) + 's)', {
+            before: _gl_before,
+            after: this._gl
+        });
+        if (eventToDispatch !== false && _gl_before != this._gl) {
+            dispatchEvent(eventToDispatch as string, document, this._gl);
+        }
+        return this._gl;
+    }
+
+    /**
+     * True when a _gl value exists and was generated more than maxAge ms ago
+     */
+    public isGlStale(): boolean {
+        return this._gl !== false && (Date.now() - this.generatedAt) > this.maxAge;
+    }
+
+    /**
+     * Returns the _gl parameter to use for decorating right now: regenerates it if the current
+     * value is too old, or tries to generate it if nothing was found yet.
+     */
+    public getFreshGl(source: any = window): string | false {
+        if (this._gl === false) {
+            return this.getGA4DecoratorParam(this.onUpdateEventName, source);
+        }
+        if (this.isGlStale()) {
+            return this.refreshGl(source);
+        }
+        return this._gl;
+    }
+
+    private storeGl(_gl: string, source: any): void {
+        this._gl = _gl;
+        this.generatedAt = Date.now();
+        (source as any)[this.globalVariableName] = _gl;
+    }
+
     detectGA4CrossDomainParam(cback: (_gl: string|false) => void, source: any = window): void {
         this._gl = false;
         (source as any)[this.globalVariableName] = false;
         this.cookieCount = 0;
 
-        //Wait for google_tag_data to be available and use the glBridge to generate our value
-        // Up to 4000 retries every 150ms (10 minutes)
+        // Poll the cookies until at least one GA4 cookie is found, then generate _gl ourselves
+        // Up to 2000 retries every 300ms (10 minutes)
         let retriesToGo = 2000;
 
         const searchForGa4DecoratorParam = () => {
@@ -466,7 +539,8 @@ export class GA4CrossDomain {
         if (typeof obj !== 'object' || obj === null) {
             return obj;
         }
-        const curParams = {_gl: this._gl, ...extraParams};
+        // Regenerate _gl if it is too old: the destination only accepts a hash a couple of minutes old
+        const curParams = {_gl: this.getFreshGl(), ...extraParams};
         for (let key in curParams) {
             if (curParams.hasOwnProperty(key)) {
                 obj[key] = (curParams as any)[key];

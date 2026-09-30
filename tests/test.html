@@ -9,7 +9,8 @@
          }
     </script>
     <!-- Decorator library -->
-    <!-- script src="./decorator.js" async></script -->
+    <script src="./decorator.js" async></script>
+    <!-- Standalone GA4 cross domain helper (independent from decorator.js, both can be tested here) -->
     <script src="./ga4crossdomain.js"></script>
 
     <!-- Decorator configuration -->
@@ -23,6 +24,9 @@
             handleGoogleAnalytics: true,
             isBrandSite: true,
             brandName: 'mantis',
+            // GA4 _gl regeneration: short values to see it happen quickly in the console
+            ga4LinkerMaxAge: 30000,      // regenerate _gl at decoration if older than 30s (default 60000)
+            ga4RefreshInterval: 15000,   // optional timer: re-decorate all links if _gl is stale (default 0 = off)
             postDecorateCallback: function (params) {
                 if (typeof params == 'object') {
                     params.partner_id = 'grandmercure';
@@ -121,6 +125,50 @@
             merchantid will be Overwritten</a></li>
         <li><a target="_blank" href="https://all.accor.com#Hash">Hash test</a></li>
     </ul>
+
+    <h2>GA4 _gl regeneration test</h2>
+    <p>
+        The hash inside <code>_gl</code> embeds the current minute and gtag.js only accepts it for about 2 minutes.
+        With <code>debug: true</code> every regeneration is logged in the console with a <code>[GA4]</code> prefix.
+        How to test:
+    </p>
+    <ol>
+        <li>Wait until the "Age" below exceeds <code>ga4LinkerMaxAge</code> (30s in this page).</li>
+        <li>Click "Decorate a URL now": the console shows <code>[GA4] Regenerated _gl</code> and the hash below changes.</li>
+        <li>Wait again, then click one of the links above: the console shows <code>[GA4] Re-decorated link on click</code>
+            and the opened tab carries a fresh <code>_gl</code>.</li>
+        <li>With <code>ga4RefreshInterval</code> set, the hrefs above are also refreshed automatically (hover them to check).</li>
+    </ol>
+    <p><button id="decorate-now">Decorate a URL now</button></p>
+    <table>
+        <tr><td>Current _gl (decorator.js)</td><td><code id="gl-value">-</code></td></tr>
+        <tr><td>Hash</td><td><code id="gl-hash">-</code></td></tr>
+        <tr><td>Age</td><td><code id="gl-age">-</code></td></tr>
+        <tr><td>Last decorated URL</td><td><code id="gl-url">-</code></td></tr>
+    </table>
+    <script>
+        (function () {
+            function ga4() {
+                var d = window._AccorTrackingDecorator && _AccorTrackingDecorator.decorator;
+                return d && d.ga4 ? d.ga4 : null;
+            }
+            function refreshPanel() {
+                var g = ga4();
+                if (!g || g._gl === false) {
+                    return;
+                }
+                document.getElementById('gl-value').textContent = g._gl;
+                document.getElementById('gl-hash').textContent = g._gl.split('*')[1];
+                document.getElementById('gl-age').textContent = Math.round((Date.now() - g.generatedAt) / 1000) + 's (max ' + Math.round(g.maxAge / 1000) + 's)';
+            }
+            setInterval(refreshPanel, 1000);
+            document.getElementById('decorate-now').addEventListener('click', function () {
+                var url = _AccorTrackingDecorator.decorateUrl('https://all.accor.com/hotel/1234/index.en.shtml');
+                document.getElementById('gl-url').textContent = url;
+                refreshPanel();
+            });
+        })();
+    </script>
 
 </main>
 </body>

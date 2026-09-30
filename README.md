@@ -81,10 +81,24 @@ _AccorTrackingDecorator.config = {
     autoDecorate: true,
     
     /* Let the script take care of detecting Google Analytics Linker Param and Client ID
-       This will result in the parameters _ga and gacid being added to the links.
+       This will result in the parameters _ga, gacid and _gl (GA4 cross-domain linker) being added to the links.
        false by default 
      */
     handleGoogleAnalytics: true,
+
+    /* OPTIONAL! Maximum age, in milliseconds, of the GA4 cross-domain linker parameter (_gl)
+       before it is regenerated at decoration time (decorateUrl / decorateObject / autoDecorate).
+       The hash inside _gl embeds the current minute and gtag.js on the destination only accepts
+       a value that is at most 2 minutes old, so keep this well under 120000. 60000 by default.
+    */
+    // ga4LinkerMaxAge: 60000,
+
+    /* OPTIONAL! Only with autoDecorate. Interval, in milliseconds, at which all links in the page are
+       decorated again if the GA4 linker parameter (_gl) has become too old (see ga4LinkerMaxAge).
+       Links are always refreshed when clicked, so this is only useful for links used without a click
+       (copy link address, open from the context menu...). 0 (disabled) by default.
+    */
+    // ga4RefreshInterval: 60000,
     
     /* Set to true if the decorator is installed on an Accor Brand Site 
        (E.G. Official portal for all Sofitel Hotels) 
@@ -135,6 +149,7 @@ _AccorTrackingDecorator.config = {
 - `sourceid` Calculated dynamically based on the attribution rules
 - `_ga` Google Analytics Linker parameter. Only if `config.handleGoogleAnalytics` is true
 - `gacid` Google Analytics Linker client id. Only if `config.handleGoogleAnalytics` is true
+- `_gl` Google Analytics 4 cross-domain linker parameter, built from the `_ga*` cookies of the GA4 trackers found on the page. Its hash expires after about 2 minutes, so the value is regenerated when a link or object is decorated more than `config.ga4LinkerMaxAge` ms after the last generation. With `autoDecorate`, links are decorated again at click time (capture phase, before the browser follows them), and optionally on a timer (see `config.ga4RefreshInterval`). Only if `config.handleGoogleAnalytics` is true
 - `utm_source` will be set to `hotelwebsite_$hotelID` if `config.isBrandSite` is false
 - `utm_medium` will be set to `accor_regional_websites` if `config.isBrandSite` is false
 - `utm_campaign`  will be set to `hotel_website_search` if `config.isBrandSite` is false

@@ -20,6 +20,8 @@ describe('Decorator', () => {
     namespace = new Namespace(nsSource);
     global.document = {
       referrer: '',
+      cookie: '',
+      addEventListener: () => {},
       location: {
         origin: '',
         href: ''

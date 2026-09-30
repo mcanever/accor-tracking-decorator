@@ -8,7 +8,7 @@
     "watch": "npx webpack --env.mode=watch",
     "build": "npx webpack --env.mode=production",
     "build-dev": "npx webpack --env.mode=development",
-    "test": "mocha --bail --exit -r jsdom-global/register --require ts-node/register './tests/*.spec.ts'",
+    "test": "mocha --bail --exit -r jsdom-global/register --require ts-node/register \"./tests/*.spec.ts\"",
     "toc": "node buildToc.js"
   },
   "author": "Matteo Canever <mcanever@d-edge.com>",
